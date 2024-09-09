@@ -4,7 +4,9 @@ import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  Background,
   Controls,
+  MiniMap,
   ReactFlow,
 } from "@xyflow/react";
 
@@ -56,11 +58,11 @@ const App: React.FC = () => {
 
   return (
     <div className="grid grid-cols-4 h-screen">
-      <div className="col-span-1">
+      <div className="col-span-1 p-4">
         <div>
-          <h2>HTML</h2>
+          <h2 className="font-semibold">HTML</h2>
           <textarea
-            className="border"
+            className="border mt-1"
             value={html}
             onChange={(e) => setHtml(e.target.value)}
             rows={5}
@@ -68,9 +70,9 @@ const App: React.FC = () => {
           />
         </div>
         <div>
-          <h2>CSS</h2>
+          <h2 className="font-semibold">CSS</h2>
           <textarea
-            className="border"
+            className="border mt-1"
             value={css}
             onChange={(e) => setCss(e.target.value)}
             rows={5}
@@ -78,9 +80,9 @@ const App: React.FC = () => {
           />
         </div>
         <div>
-          <h2>JS</h2>
+          <h2 className="font-semibold">JS</h2>
           <textarea
-            className="border"
+            className="border mt-1"
             value={js}
             onChange={(e) => setJs(e.target.value)}
             rows={5}
@@ -104,6 +106,8 @@ const App: React.FC = () => {
           style={rfStyle}
         >
           <Controls />
+          <MiniMap zoomable pannable  />
+          <Background />
         </ReactFlow>
       </div>
     </div>

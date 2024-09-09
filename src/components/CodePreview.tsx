@@ -38,12 +38,9 @@ interface CodePreviewProps {
     }, [html, css, js]);
   
     return (
-      <div style={{  
-      border: "1px solid #ddd",
-      padding: 10,
-      borderRadius: 5,}}>
-        <iframe ref={iframeRef} title="Code Preview" />
-      </div>
+    
+        <iframe ref={iframeRef} style={{border:"1px solid #ddd",backgroundColor:"white"}} title="Code Preview" />
+     
     );
   };
   
