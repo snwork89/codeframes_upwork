@@ -14,6 +14,7 @@ import type { Node, Edge, NodeProps } from "@xyflow/react";
 import { NodeTypes } from "@xyflow/react/dist/esm/types";
 import React, { useState, useCallback } from "react";
 import "@xyflow/react/dist/style.css";
+import { initialNodes } from "@/initData";
 
 const rfStyle = {
   backgroundColor: "rgb(247 247 247)",
@@ -30,18 +31,7 @@ const generateId = (() => {
 })();
 
 const App: React.FC = () => {
-  const [nodes, setNodes] = useState<Node[]>([
-    {
-      id: "node-1",
-      type: "textUpdater",
-      position: { x: 0, y: 0 },
-      data: {
-        html: "<h1>Hello World</h1>",
-        css: "h1 { color: red; }",
-        js: 'console.log("Hello from JS!");',
-      },
-    }
-  ]);
+  const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [selectedNodeId, setSelectedNodeId] = useState<string>("node-1");
   const styledNodes = nodes.map((node) => ({
     ...node,
