@@ -34,26 +34,37 @@ const App: React.FC = () => {
     {
       id: "node-1",
       type: "textUpdater",
-      draggable:true,
-      selectable:true,
       position: { x: 0, y: 0 },
       data: {
         html: "<h1>Hello World</h1>",
         css: "h1 { color: red; }",
         js: 'console.log("Hello from JS!");',
       },
-    },
+    }
   ]);
-  const [edges, setEdges] = useState<Edge[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string>("node-1");
+  const styledNodes = nodes.map((node) => ({
+    ...node,
+    style: {
+      border: node.id === selectedNodeId ? "2px solid #3b82f6" : "1px solid #ccc",
+      padding: 4,
+      borderRadius: 4,
+      background: "white",
+    },
+  }));
+  const [edges, setEdges] = useState<Edge[]>([]);
+
 
   const nodeTypes: NodeTypes = {
     textUpdater: TextUpdaterNode,
   };
 
-  const selectedNode:any = nodes.find((n) => n.id === selectedNodeId);
+  const selectedNode: any = nodes.find((n) => n.id === selectedNodeId);
 
-  const updateSelectedNodeData = (field: "html" | "css" | "js", value: string) => {
+  const updateSelectedNodeData = (
+    field: "html" | "css" | "js",
+    value: string
+  ) => {
     setNodes((prev) =>
       prev.map((node) =>
         node.id === selectedNodeId
@@ -64,7 +75,9 @@ const App: React.FC = () => {
   };
 
   const onNodesChange = useCallback(
-    (changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes: any) => {
+      setNodes((nds) => applyNodeChanges(changes, nds));
+    },
     []
   );
 
@@ -77,17 +90,15 @@ const App: React.FC = () => {
     setEdges((eds) => addEdge(connection, eds));
   }, []);
 
-  const onNodeClick = useCallback((_:any, node: Node) => {
-    setSelectedNodeId(node.id);
-  }, []);
+
 
   const addNewTemplateNode = () => {
     const id = generateId();
     const newNode: Node = {
       id,
       type: "textUpdater",
-      draggable:true,
-      selectable:true,
+      draggable: true,
+      selectable: true,
       position: {
         x: Math.random() * 250,
         y: Math.random() * 250,
@@ -101,6 +112,11 @@ const App: React.FC = () => {
     setNodes((prev) => [...prev, newNode]);
     setSelectedNodeId(id);
   };
+
+
+  console.log("nodes data ",nodes);
+
+  console.log("selected",selectedNode);
 
   return (
     <div className="grid grid-cols-4 h-screen">
@@ -147,20 +163,24 @@ const App: React.FC = () => {
 
       <div className="col-span-3">
         <ReactFlow
-          nodes={nodes}
+          nodes={styledNodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeClick={onNodeClick}
+          onNodeClick={(_, node) => setSelectedNodeId(node.id)} // Select on click
           nodeTypes={nodeTypes}
+          onNodeDragStop={(_, node) => {
+            // Update position after drag
+            setNodes((prev) =>
+              prev.map((n) =>
+                n.id === node.id ? { ...n, position: node.position } : n
+              )
+            );
+          }}
           fitView
           style={rfStyle}
-        >
-          <Controls />
-          <MiniMap zoomable pannable />
-          <Background />
-        </ReactFlow>
+        />
       </div>
     </div>
   );
