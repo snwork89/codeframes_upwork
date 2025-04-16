@@ -101,19 +101,44 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-gray-50">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Simple, Transparent Pricing
-              </h2>
-              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">Choose the plan that's right for you.</p>
+      <section id="pricing" className="py-20 bg-white relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center mb-16"
+          >
+            <div className="inline-flex items-center justify-center mb-4">
+              <span className="p-2 rounded-lg bg-purple-100">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6 text-purple-600"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                  <path d="M12 18V6"></path>
+                </svg>
+              </span>
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
+              Choose the plan that's right for your coding journey.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <PricingCard
               title="Free"
               price="$0"
@@ -122,6 +147,7 @@ export default function LandingPage() {
               buttonText="Get Started"
               buttonVariant="outline"
               href="/signup"
+              delay={0.1}
             />
             <PricingCard
               title="Basic"
@@ -132,6 +158,7 @@ export default function LandingPage() {
               buttonVariant="default"
               href="/signup"
               highlighted={true}
+              delay={0.2}
             />
             <PricingCard
               title="Premium"
@@ -148,6 +175,7 @@ export default function LandingPage() {
               buttonText="Subscribe"
               buttonVariant="outline"
               href="/signup"
+              delay={0.3}
             />
           </div>
         </div>
