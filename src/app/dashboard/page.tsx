@@ -1,9 +1,9 @@
 import React from 'react'
 
-export default function LandingPage() {
+export default function page() {
   return (
     <div>
-      Landing Page 
+      Dashboard Page
     </div>
   )
 }
