@@ -1,8 +1,11 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Code, Check, Star } from "lucide-react"
 import PricingCard from "@/components/pricing-card"
 import AnimatedBackground from "@/components/AnimatedBackground"
+import { motion } from "framer-motion"
 
 export default function LandingPage() {
   return (
@@ -28,7 +31,12 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-white to-purple-50">
-        <div className="container px-4 md:px-6">
+      <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto"
+          >
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
@@ -50,7 +58,7 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-        </div>
+          </motion.div>
       </section>
 
       {/* Features Section */}
