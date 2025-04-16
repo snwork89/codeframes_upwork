@@ -2,105 +2,222 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Code, Check, Star } from "lucide-react"
+import { ArrowRight, Code, Star, Zap, Layout, Layers, Sparkles, Lightbulb, Infinity } from "lucide-react"
 import PricingCard from "@/components/pricing-card"
-import AnimatedBackground from "@/components/AnimatedBackground"
-import { motion } from "framer-motion"
 
-export default function LandingPage() {
+import CursorEffect from "@/components/CursorEffect";
+import AnimatedBackground from "@/components/AnimatedBackground"
+
+import InteractiveCanvas from "@/components/InterActiveCanvas"
+import { motion } from "framer-motion"
+import LandingPageCodePreview from "@/components/LandingPageCodePreview"
+
+export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
-       <AnimatedBackground />
+    <div className="flex flex-col min-h-screen relative overflow-hidden bg-white">
+      <CursorEffect />
+      <AnimatedBackground />
+
       {/* Navigation */}
-      <header className="border-b">
-        <div className="container flex items-center justify-between py-4">
-          <div className="flex items-center gap-2">
-            <Code className="h-6 w-6 text-purple-600" />
-            <span className="text-xl font-bold">SnippetVault</span>
-          </div>
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between py-4 px-4 md:px-6">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 opacity-75 blur group-hover:opacity-100 transition duration-300"></div>
+              <div className="relative bg-white rounded-full p-1">
+                <Code className="h-6 w-6 text-purple-600 transition-transform duration-300 group-hover:rotate-12" />
+              </div>
+            </div>
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+              SnippetVault
+            </span>
+          </Link>
           <div className="flex items-center gap-4">
             <Link href="/login">
-              <Button variant="ghost">Login</Button>
+              <Button variant="ghost" className="hover:bg-purple-50 transition-colors duration-300">
+                Login
+              </Button>
             </Link>
             <Link href="/signup">
-              <Button>Sign Up</Button>
+              <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg">
+                Sign Up
+              </Button>
             </Link>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-purple-50">
-      <motion.div
+      <section className="py-20 relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto"
           >
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-                Store and Preview Your Code Snippets
-              </h1>
-              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
-                Save HTML, CSS, and JavaScript snippets with live preview. Organize your code library and access it from
-                anywhere.
-              </p>
+            <div className="inline-block mb-4 px-4 py-1.5 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-full text-sm font-medium animate-pulse">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+                Organize your code like never before
+              </span>
             </div>
-            <div className="space-x-4">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800">
+              Store Code Snippets on an{" "}
+              <span className="relative inline-block">
+                Infinite Canvas
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full"></div>
+              </span>
+            </h1>
+            <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl mb-8">
+              Save HTML, CSS, and JavaScript snippets with live preview. Organize your code library visually and access
+              it from anywhere with our interactive infinite canvas.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/signup">
-                <Button className="bg-purple-600 hover:bg-purple-700">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg hover:scale-105 w-full sm:w-auto group">
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link href="#pricing">
-                <Button variant="outline">View Pricing</Button>
+                <Button
+                  variant="outline"
+                  className="border-purple-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 w-full sm:w-auto"
+                >
+                  View Pricing
+                </Button>
               </Link>
             </div>
-          </div>
           </motion.div>
+        </div>
+
+        {/* Animated code preview */}
+        <div className="mt-16 relative z-10">
+          <LandingPageCodePreview delay={500} />
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-1/4 right-0 w-64 h-64 bg-purple-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Powerful Features</h2>
-              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
-                Everything you need to manage your code snippets efficiently.
-              </p>
+      {/* Infinite Canvas Section */}
+      <section className="py-20 bg-white relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center mb-16"
+          >
+            <div className="inline-flex items-center justify-center mb-4">
+              <span className="p-2 rounded-lg bg-purple-100">
+                <Infinity className="h-6 w-6 text-purple-600" />
+              </span>
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            <div className="flex flex-col items-center space-y-2 border p-6 rounded-lg">
-              <div className="p-3 rounded-full bg-purple-100">
-                <Code className="h-6 w-6 text-purple-600" />
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
+              Organize on an{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+                Infinite Canvas
+              </span>
+            </h2>
+            <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
+              Arrange your snippets spatially, group related code, and visualize your entire collection at once. Drag,
+              zoom, and organize your code in a way that makes sense to you.
+            </p>
+          </motion.div>
+
+          {/* Interactive canvas demo */}
+          <InteractiveCanvas />
+
+          {/* Feature highlights */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white rounded-xl p-6 shadow-lg border border-purple-100"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <Layout className="h-5 w-5 text-purple-600" />
+                </div>
+                <h3 className="font-semibold text-lg">Spatial Organization</h3>
               </div>
-              <h3 className="text-xl font-bold">Live Preview</h3>
-              <p className="text-gray-500 text-center">
-                See your HTML, CSS, and JavaScript code in action with real-time preview.
+              <p className="text-gray-500">
+                Organize your snippets visually in a way that mirrors your mental model. Group related code together.
               </p>
-            </div>
-            <div className="flex flex-col items-center space-y-2 border p-6 rounded-lg">
-              <div className="p-3 rounded-full bg-purple-100">
-                <Star className="h-6 w-6 text-purple-600" />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-white rounded-xl p-6 shadow-lg border border-purple-100"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <Layers className="h-5 w-5 text-purple-600" />
+                </div>
+                <h3 className="font-semibold text-lg">Drag & Drop</h3>
               </div>
-              <h3 className="text-xl font-bold">Organize & Tag</h3>
-              <p className="text-gray-500 text-center">
-                Categorize your snippets with tags and folders for easy access.
+              <p className="text-gray-500">
+                Easily move and arrange your snippets with intuitive drag and drop functionality.
               </p>
-            </div>
-            <div className="flex flex-col items-center space-y-2 border p-6 rounded-lg">
-              <div className="p-3 rounded-full bg-purple-100">
-                <Check className="h-6 w-6 text-purple-600" />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="bg-white rounded-xl p-6 shadow-lg border border-purple-100"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <Zap className="h-5 w-5 text-purple-600" />
+                </div>
+                <h3 className="font-semibold text-lg">Instant Preview</h3>
               </div>
-              <h3 className="text-xl font-bold">Share & Collaborate</h3>
-              <p className="text-gray-500 text-center">Share your snippets with others or keep them private.</p>
-            </div>
+              <p className="text-gray-500">See your code in action with real-time previews that update as you type.</p>
+            </motion.div>
           </div>
         </div>
       </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-gradient-to-b from-white to-purple-50 relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center mb-16"
+          >
+            <div className="inline-flex items-center justify-center mb-4">
+              <span className="p-2 rounded-lg bg-purple-100">
+                <Sparkles className="h-6 w-6 text-purple-600" />
+              </span>
+            </div>
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">Powerful Features</h2>
+            <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
+              Everything you need to manage your code snippets efficiently on an infinite canvas.
+            </p>
+          </motion.div>
+
+          
+
+          {/* Decorative elements */}
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-200 rounded-full blur-3xl opacity-30"></div>
+          <div className="absolute top-1/3 left-0 w-64 h-64 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
@@ -181,6 +298,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600"></div>
         <div className="absolute inset-0 opacity-10">
@@ -214,24 +332,32 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
-      
+
       {/* Footer */}
-      <footer className="border-t py-6 md:py-8">
-        <div className="container flex flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
-          <div className="flex items-center gap-2">
-            <Code className="h-5 w-5 text-purple-600" />
-            <span className="font-semibold">SnippetVault</span>
-          </div>
-          <p className="text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} SnippetVault. All rights reserved.
-          </p>
-          <div className="flex gap-4">
-            <Link href="/terms" className="text-sm text-gray-500 hover:underline">
-              Terms
-            </Link>
-            <Link href="/privacy" className="text-sm text-gray-500 hover:underline">
-              Privacy
-            </Link>
+      <footer className="border-t py-12 md:py-16 bg-white">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-2">
+              <Code className="h-6 w-6 text-purple-600" />
+              <span className="text-xl font-bold">SnippetVault</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-8">
+              <Link href="/terms" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+                Terms
+              </Link>
+              <Link href="/privacy" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+                Privacy
+              </Link>
+              <Link href="#" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+                Documentation
+              </Link>
+              <Link href="#" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+                Blog
+              </Link>
+            </div>
+            <p className="text-center text-sm text-gray-500">
+              © {new Date().getFullYear()} SnippetVault. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
