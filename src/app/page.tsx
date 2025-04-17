@@ -8,7 +8,7 @@ import FeatureCard from "@/components/FeatureCard"
 import CursorEffect from "@/components/CursorEffect"
 import AnimatedBackground from "@/components/AnimatedBackground"
 import CodePreview from "@/components/LandingPageCodePreview"
-import InteractiveCanvas from "@/components/InterActiveCanvas";
+import InteractiveCanvas from "@/components/InterActiveCanvas"
 import { motion } from "framer-motion"
 
 export default function Home() {
@@ -60,9 +60,9 @@ export default function Home() {
                 Organize your code like never before
               </span>
             </div>
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl mb-6">
               Store Code Snippets on an{" "}
-              <span className="relative inline-block">
+              <span className="relative inline-block text-purple-700">
                 Infinite Canvas
                 <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full"></div>
               </span>
@@ -116,10 +116,7 @@ export default function Home() {
               </span>
             </div>
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
-              Organize on an{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
-                Infinite Canvas
-              </span>
+              Organize on an <span className="text-purple-700">Infinite Canvas</span>
             </h2>
             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
               Arrange your snippets spatially, group related code, and visualize your entire collection at once. Drag,
@@ -242,7 +239,6 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto text-center mb-16"
           >
