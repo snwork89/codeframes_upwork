@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react"
 
 export default function CursorEffect() {
+  const [mounted, setMounted] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [hidden, setHidden] = useState(true)
   const [clicked, setClicked] = useState(false)
   const [linkHovered, setLinkHovered] = useState(false)
 
+  // Only run on client-side
   useEffect(() => {
-    // Only run on client
-    if (typeof window === "undefined") return
+    setMounted(true)
 
     // Don't apply custom cursor on mobile/touch devices
     if (window.matchMedia("(pointer: coarse)").matches) return
@@ -66,7 +67,11 @@ export default function CursorEffect() {
     }
   }, [])
 
-  if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches) {
+  // Don't render anything on server-side or on mobile devices
+  if (!mounted) return null
+
+  // Check for mobile devices after mounting
+  if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
     return null
   }
 
