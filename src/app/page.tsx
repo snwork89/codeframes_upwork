@@ -4,13 +4,12 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Code, Star, Zap, Layout, Layers, Sparkles, Lightbulb, Infinity } from "lucide-react"
 import PricingCard from "@/components/pricing-card"
-
-import CursorEffect from "@/components/CursorEffect";
+import FeatureCard from "@/components/FeatureCard"
+import CursorEffect from "@/components/CursorEffect"
 import AnimatedBackground from "@/components/AnimatedBackground"
-
-import InteractiveCanvas from "@/components/InterActiveCanvas"
+import CodePreview from "@/components/LandingPageCodePreview"
+import InteractiveCanvas from "@/components/InterActiveCanvas";
 import { motion } from "framer-motion"
-import LandingPageCodePreview from "@/components/LandingPageCodePreview"
 
 export default function Home() {
   return (
@@ -93,7 +92,7 @@ export default function Home() {
 
         {/* Animated code preview */}
         <div className="mt-16 relative z-10">
-          <LandingPageCodePreview delay={500} />
+          <CodePreview delay={500} />
         </div>
 
         {/* Decorative elements */}
@@ -209,7 +208,27 @@ export default function Home() {
             </p>
           </motion.div>
 
-          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <FeatureCard
+              icon={<Code className="h-6 w-6 text-purple-600" />}
+              title="Live Preview"
+              description="See your HTML, CSS, and JavaScript code in action with real-time preview."
+              delay={0.1}
+            />
+            <FeatureCard
+              icon={<Star className="h-6 w-6 text-purple-600" />}
+              title="Organize & Tag"
+              description="Categorize your snippets with tags and arrange them spatially on your canvas."
+              highlighted={true}
+              delay={0.2}
+            />
+            <FeatureCard
+              icon={<Lightbulb className="h-6 w-6 text-purple-600" />}
+              title="Share & Collaborate"
+              description="Share your snippets with others or keep them private."
+              delay={0.3}
+            />
+          </div>
 
           {/* Decorative elements */}
           <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-200 rounded-full blur-3xl opacity-30"></div>
