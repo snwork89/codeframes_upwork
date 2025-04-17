@@ -16,6 +16,7 @@ export async function middleware(req: NextRequest) {
     !session &&
     !req.nextUrl.pathname.startsWith("/login") &&
     !req.nextUrl.pathname.startsWith("/signup") &&
+    !req.nextUrl.pathname.startsWith("/snippet") &&
     req.nextUrl.pathname !== "/" &&
     !req.nextUrl.pathname.startsWith("/auth/")
   ) {
