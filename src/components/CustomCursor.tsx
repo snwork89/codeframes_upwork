@@ -1,44 +1,47 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 export default function CustomCursor() {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [isPointer, setIsPointer] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
-  const [isClicking, setIsClicking] = useState(false)
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isPointer, setIsPointer] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
 
   useEffect(() => {
     const updatePosition = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY })
+      setPosition({ x: e.clientX, y: e.clientY });
 
-      const target = e.target as HTMLElement
-      setIsPointer(window.getComputedStyle(target).cursor === "pointer")
-    }
+      const target = e.target as HTMLElement;
+      setIsPointer(window.getComputedStyle(target).cursor === "pointer");
+    };
 
-    const handleMouseEnter = () => setIsVisible(true)
-    const handleMouseLeave = () => setIsVisible(false)
-    const handleMouseDown = () => setIsClicking(true)
-    const handleMouseUp = () => setIsClicking(false)
+    const handleMouseEnter = () => setIsVisible(true);
+    const handleMouseLeave = () => setIsVisible(false);
+    const handleMouseDown = () => setIsClicking(true);
+    const handleMouseUp = () => setIsClicking(false);
 
-    window.addEventListener("mousemove", updatePosition)
-    window.addEventListener("mouseenter", handleMouseEnter)
-    window.addEventListener("mouseleave", handleMouseLeave)
-    window.addEventListener("mousedown", handleMouseDown)
-    window.addEventListener("mouseup", handleMouseUp)
+    window.addEventListener("mousemove", updatePosition);
+    window.addEventListener("mouseenter", handleMouseEnter);
+    window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      window.removeEventListener("mousemove", updatePosition)
-      window.removeEventListener("mouseenter", handleMouseEnter)
-      window.removeEventListener("mouseleave", handleMouseLeave)
-      window.removeEventListener("mousedown", handleMouseDown)
-      window.removeEventListener("mouseup", handleMouseUp)
-    }
-  }, [])
+      window.removeEventListener("mousemove", updatePosition);
+      window.removeEventListener("mouseenter", handleMouseEnter);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
 
   // Don't show custom cursor on mobile devices
-  if (typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches) {
-    return null
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 768px)").matches
+  ) {
+    return null;
   }
 
   return (
@@ -53,9 +56,12 @@ export default function CustomCursor() {
           width: isPointer ? "60px" : "20px",
           height: isPointer ? "60px" : "20px",
           backgroundColor: isPointer ? "rgba(255, 255, 255, 0.2)" : "white",
-          transform: `translate(-50%, -50%) ${isPointer ? "scale(1.2)" : "scale(1)"}`,
+          transform: `translate(-50%, -50%) ${
+            isPointer ? "scale(1.2)" : "scale(1)"
+          }`,
           border: isPointer ? "1px solid rgba(255, 255, 255, 0.5)" : "none",
-          transition: "width 0.2s, height 0.2s, background-color 0.2s, transform 0.1s",
+          transition:
+            "width 0.2s, height 0.2s, background-color 0.2s, transform 0.1s",
         }}
       />
       <div
@@ -74,7 +80,7 @@ export default function CustomCursor() {
         body {
           cursor: none;
         }
-        
+
         @media (max-width: 768px) {
           body {
             cursor: auto;
@@ -82,5 +88,5 @@ export default function CustomCursor() {
         }
       `}</style>
     </>
-  )
+  );
 }
