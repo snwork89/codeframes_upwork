@@ -59,6 +59,9 @@ export async function POST(request: Request) {
           snippetLimit = PLANS.PREMIUM.snippetLimit
         }
 
+        // Convert Unix timestamp to ISO string for database storage
+        const currentPeriodEndDate = new Date(subscription.current_period_end * 1000).toISOString()
+
         // Update subscription in database
         await supabaseAdmin
           .from("subscriptions")
@@ -67,7 +70,7 @@ export async function POST(request: Request) {
             stripe_price_id: subscription.items.data[0].price.id,
             plan_type: planType,
             status: subscription.status,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_end: currentPeriodEndDate,
             snippet_limit: snippetLimit,
           })
           .eq("user_id", userId)
@@ -99,12 +102,15 @@ export async function POST(request: Request) {
         break
       }
 
+      // Convert Unix timestamp to ISO string for database storage
+      const currentPeriodEndDate = new Date(subscription.current_period_end * 1000).toISOString()
+
       // Update subscription in database
       await supabaseAdmin
         .from("subscriptions")
         .update({
           status: subscription.status,
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          current_period_end: currentPeriodEndDate,
         })
         .eq("stripe_subscription_id", subscriptionId)
 
@@ -139,6 +145,9 @@ export async function POST(request: Request) {
         snippetLimit = PLANS.PREMIUM.snippetLimit
       }
 
+      // Convert Unix timestamp to ISO string for database storage
+      const currentPeriodEndDate = new Date(subscription.current_period_end * 1000).toISOString()
+
       // Update subscription in database
       await supabaseAdmin
         .from("subscriptions")
@@ -146,7 +155,7 @@ export async function POST(request: Request) {
           stripe_price_id: newPriceId,
           plan_type: newPlanType,
           status: subscription.status,
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          current_period_end: currentPeriodEndDate,
           snippet_limit: snippetLimit,
         })
         .eq("stripe_subscription_id", subscription.id)
