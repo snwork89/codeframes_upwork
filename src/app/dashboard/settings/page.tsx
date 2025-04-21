@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "@/hooks/use-toast"
 import { PLANS } from "@/lib/stripe"
 import type { Database } from "@/lib/database.types"
+import { useRouter } from "next/navigation"
 
 type Subscription = Database["public"]["Tables"]["subscriptions"]["Row"]
 
@@ -16,19 +17,22 @@ export default function Settings() {
   const [loading, setLoading] = useState(true)
   const [upgradeLoading, setUpgradeLoading] = useState(false)
   const supabase = createClientComponentClient<Database>()
+  const router = useRouter()
 
   useEffect(() => {
     async function getSubscription() {
       try {
         const {
-          data: { session },
-        } = await supabase.auth.getSession()
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
 
-        if (!session) {
+        if (userError || !user) {
+          router.push("/login")
           return
         }
 
-        const { data, error } = await supabase.from("subscriptions").select("*").eq("user_id", session.user.id).single()
+        const { data, error } = await supabase.from("subscriptions").select("*").eq("user_id", user.id).single()
 
         if (error) {
           throw error
@@ -48,12 +52,22 @@ export default function Settings() {
     }
 
     getSubscription()
-  }, [supabase])
+  }, [supabase, router])
 
   const handleUpgrade = async (planType: "basic" | "premium") => {
     setUpgradeLoading(true)
 
     try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+
+      if (userError || !user) {
+        router.push("/login")
+        return
+      }
+
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
@@ -61,6 +75,7 @@ export default function Settings() {
         },
         body: JSON.stringify({
           planType,
+          userId: user.id, // Pass the user ID from getUser
         }),
       })
 

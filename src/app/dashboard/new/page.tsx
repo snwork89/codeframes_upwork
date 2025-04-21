@@ -34,47 +34,49 @@ export default function NewSnippet() {
 
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession()
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
 
-      if (!session) {
+      if (userError || !user) {
         toast({
           title: "Authentication error",
           description: "You must be logged in to create a snippet",
           variant: "destructive",
         })
+        router.push("/login")
         return
       }
 
-      // // Check if user has reached their snippet limit
-      // const { data: subscriptionData, error: subscriptionError } = await supabase
-      //   .from("subscriptions")
-      //   .select("snippet_limit")
-      //   .eq("user_id", session.user.id)
-      //   .single()
+      // Check if user has reached their snippet limit
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from("subscriptions")
+        .select("snippet_limit")
+        .eq("user_id", user.id)
+        .single()
 
-      // if (subscriptionError) {
-      //   throw subscriptionError
-      // }
+      if (subscriptionError) {
+        throw subscriptionError
+      }
 
-      // // Count user's existing snippets
-      // const { count, error: countError } = await supabase
-      //   .from("snippets")
-      //   .select("id", { count: "exact", head: true })
-      //   .eq("user_id", session.user.id)
+      // Count user's existing snippets
+      const { count, error: countError } = await supabase
+        .from("snippets")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
 
-      // if (countError) {
-      //   throw countError
-      // }
+      if (countError) {
+        throw countError
+      }
 
-      // if (count !== null && count >= subscriptionData.snippet_limit) {
-      //   toast({
-      //     title: "Limit reached",
-      //     description: "You've reached your snippet limit. Please upgrade your plan to create more snippets.",
-      //     variant: "destructive",
-      //   })
-      //   return
-      // }
+      if (count !== null && count >= subscriptionData.snippet_limit) {
+        toast({
+          title: "Limit reached",
+          description: "You've reached your snippet limit. Please upgrade your plan to create more snippets.",
+          variant: "destructive",
+        })
+        return
+      }
 
       // Create the snippet
       const { error } = await supabase.from("snippets").insert({
@@ -83,7 +85,7 @@ export default function NewSnippet() {
         html_code: htmlCode,
         css_code: cssCode,
         js_code: jsCode,
-        user_id: session.user.id,
+        user_id: user.id,
         is_public: isPublic,
       })
 
