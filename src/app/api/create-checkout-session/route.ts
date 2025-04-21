@@ -9,11 +9,13 @@ export async function POST(request: Request) {
     const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
+    // Get authenticated user
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (userError || !user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
@@ -34,13 +36,13 @@ export async function POST(request: Request) {
     }
 
     // Get or create customer
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError2 } = await supabase
       .from("profiles")
       .select("email")
-      .eq("id", session.user.id)
+      .eq("id", user.id)
       .single()
 
-    if (userError) {
+    if (userError2) {
       return NextResponse.json({ message: "Error fetching user data" }, { status: 500 })
     }
 
@@ -48,7 +50,7 @@ export async function POST(request: Request) {
     const { data: subscriptionData, error: subscriptionError } = await supabase
       .from("subscriptions")
       .select("stripe_customer_id")
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .single()
 
     if (subscriptionError && subscriptionError.code !== "PGRST116") {
@@ -62,14 +64,14 @@ export async function POST(request: Request) {
       const customer = await stripe.customers.create({
         email: userData.email,
         metadata: {
-          userId: session.user.id,
+          userId: user.id,
         },
       })
 
       customerId = customer.id
 
       // Update the subscription record with the customer ID
-      await supabase.from("subscriptions").update({ stripe_customer_id: customerId }).eq("user_id", session.user.id)
+      await supabase.from("subscriptions").update({ stripe_customer_id: customerId }).eq("user_id", user.id)
     }
 
     // Create a checkout session
@@ -85,7 +87,7 @@ export async function POST(request: Request) {
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/settings?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/settings?canceled=true`,
       metadata: {
-        userId: session.user.id,
+        userId: user.id,
         planType: planType,
       },
     })
