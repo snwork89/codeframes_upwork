@@ -1,9 +1,15 @@
+"use client"
+
 import type React from "react"
 import Link from "next/link"
-import { Code, Plus, Settings, LogOut } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { Code, Plus, Settings, LogOut, Grid, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -21,18 +27,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Button>
           </Link>
           <nav className="space-y-1">
-            <Link href="/dashboard" className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100">
-              All Snippets
+            <Link
+              href="/dashboard"
+              className={cn(
+                "flex items-center px-3 py-2 rounded-md hover:bg-gray-100",
+                pathname === "/dashboard" ? "bg-purple-50 text-purple-700" : "text-gray-700",
+              )}
+            >
+              <Grid className="h-4 w-4 mr-2" /> Grid View
+            </Link>
+            <Link
+              href="/dashboard/canvas"
+              className={cn(
+                "flex items-center px-3 py-2 rounded-md hover:bg-gray-100",
+                pathname === "/dashboard/canvas" ? "bg-purple-50 text-purple-700" : "text-gray-700",
+              )}
+            >
+              <Layers className="h-4 w-4 mr-2" /> Canvas View
             </Link>
             <Link
               href="/dashboard/favorites"
-              className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+              className={cn(
+                "flex items-center px-3 py-2 rounded-md hover:bg-gray-100",
+                pathname === "/dashboard/favorites" ? "bg-purple-50 text-purple-700" : "text-gray-700",
+              )}
             >
               Favorites
             </Link>
             <Link
               href="/dashboard/settings"
-              className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+              className={cn(
+                "flex items-center px-3 py-2 rounded-md hover:bg-gray-100",
+                pathname === "/dashboard/settings" ? "bg-purple-50 text-purple-700" : "text-gray-700",
+              )}
             >
               <Settings className="h-4 w-4 mr-2" /> Settings
             </Link>
