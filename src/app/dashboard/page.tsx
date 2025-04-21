@@ -13,11 +13,13 @@ type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
 export default async function Dashboard() {
   const supabase = createServerComponentClient<Database>({ cookies })
 
+  // Get authenticated user
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (userError || !user) {
     redirect("/login")
   }
 
@@ -25,7 +27,7 @@ export default async function Dashboard() {
   const { data: snippets, error } = await supabase
     .from("snippets")
     .select("*")
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
   if (error) {
@@ -33,11 +35,7 @@ export default async function Dashboard() {
   }
 
   // Get user's subscription
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("*")
-    .eq("user_id", session.user.id)
-    .single()
+  const { data: subscription } = await supabase.from("subscriptions").select("*").eq("user_id", user.id).single()
 
   return (
     <DashboardLayout>

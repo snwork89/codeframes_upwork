@@ -6,32 +6,44 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    // Get user with verification from Supabase Auth server
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  // If user is not signed in and the current path is not / or /login or /signup
-  // redirect the user to /
-  if (
-    !session &&
-    !req.nextUrl.pathname.startsWith("/login") &&
-    !req.nextUrl.pathname.startsWith("/signup") &&
-    !req.nextUrl.pathname.startsWith("/snippet") &&
-    req.nextUrl.pathname !== "/" &&
-    !req.nextUrl.pathname.startsWith("/auth/")
-  ) {
-    return NextResponse.redirect(new URL("/login", req.url))
-  }
+    // If user is not signed in and the current path is not / or /login or /signup
+    // redirect the user to /login
+    if (
+      !user &&
+      !req.nextUrl.pathname.startsWith("/login") &&
+      !req.nextUrl.pathname.startsWith("/signup") &&
+      req.nextUrl.pathname !== "/" &&
+      !req.nextUrl.pathname.startsWith("/auth/")
+    ) {
+      return NextResponse.redirect(new URL("/login", req.url))
+    }
 
-  // If user is signed in and the current path is / or /login or /signup
-  // redirect the user to /dashboard
-  if (
-    session &&
-    (req.nextUrl.pathname === "/" ||
-      req.nextUrl.pathname.startsWith("/login") ||
-      req.nextUrl.pathname.startsWith("/signup"))
-  ) {
-    return NextResponse.redirect(new URL("/dashboard", req.url))
+    // If user is signed in and the current path is / or /login or /signup
+    // redirect the user to /dashboard
+    if (
+      user &&
+      (req.nextUrl.pathname === "/" ||
+        req.nextUrl.pathname.startsWith("/login") ||
+        req.nextUrl.pathname.startsWith("/signup"))
+    ) {
+      return NextResponse.redirect(new URL("/dashboard", req.url))
+    }
+  } catch (error) {
+    // If there's an error verifying the session, redirect to login
+    if (
+      !req.nextUrl.pathname.startsWith("/login") &&
+      !req.nextUrl.pathname.startsWith("/signup") &&
+      req.nextUrl.pathname !== "/" &&
+      !req.nextUrl.pathname.startsWith("/auth/")
+    ) {
+      return NextResponse.redirect(new URL("/login", req.url))
+    }
   }
 
   return res
