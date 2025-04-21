@@ -31,7 +31,7 @@ const rfStyle = {
 }
 
 const TextUpdaterNode = ({ data, selected }: NodeProps) => {
-  const { html, css, js, title } :any= data
+  const { html, css, js, title }:any = data
 
   return (
     <div className="p-1">
@@ -65,10 +65,11 @@ export default function CanvasView() {
     async function loadSnippets() {
       try {
         const {
-          data: { session },
-        } = await supabase.auth.getSession()
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
 
-        if (!session) {
+        if (userError || !user) {
           router.push("/login")
           return
         }
@@ -76,7 +77,7 @@ export default function CanvasView() {
         const { data: snippets, error } = await supabase
           .from("snippets")
           .select("*")
-          .eq("user_id", session.user.id)
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false })
 
         if (error) throw error
@@ -129,7 +130,6 @@ export default function CanvasView() {
   const selectedNode:any = nodes.find((node) => node.id === selectedNodeId)
 
   const handleNodeClick = (_: any, node: any) => {
-    
     setSelectedNodeId(node.id)
     setEditData({
       html: node.data.html || "",
@@ -151,10 +151,11 @@ export default function CanvasView() {
     setSaving(true)
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession()
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
 
-      if (!session) {
+      if (userError || !user) {
         router.push("/login")
         return
       }
@@ -420,4 +421,3 @@ export default function CanvasView() {
     </DashboardLayout>
   )
 }
-
