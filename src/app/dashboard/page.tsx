@@ -5,12 +5,12 @@ import Link from "next/link"
 import DashboardLayout from "@/components/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Code, ExternalLink, Pencil } from "lucide-react"
+import { Plus, Code, ExternalLink, Pencil, Layers } from "lucide-react"
 import type { Database } from "@/lib/database.types"
 
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
 
-export default async function DashboardPage() {
+export default async function Dashboard() {
   const supabase = createServerComponentClient<Database>({ cookies })
 
   const {
@@ -44,11 +44,18 @@ export default async function DashboardPage() {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Your Snippets</h1>
-          <Link href="/dashboard/new">
-            <Button className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-2" /> New Snippet
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/dashboard/canvas">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Layers className="h-4 w-4" /> Canvas View
+              </Button>
+            </Link>
+            <Link href="/dashboard/new">
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                <Plus className="h-4 w-4 mr-2" /> New Snippet
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {subscription && (
