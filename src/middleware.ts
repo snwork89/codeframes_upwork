@@ -19,6 +19,7 @@ export async function middleware(req: NextRequest) {
       !req.nextUrl.pathname.startsWith("/login") &&
       !req.nextUrl.pathname.startsWith("/signup") &&
       req.nextUrl.pathname !== "/" &&
+      req.nextUrl.pathname !== "/explore" &&
       !req.nextUrl.pathname.startsWith("/auth/")
     ) {
       return NextResponse.redirect(new URL("/login", req.url))

@@ -2,12 +2,12 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Code, Star, Zap, Layout, Layers, Sparkles, Lightbulb, Infinity, Globe } from "lucide-react"
-import PricingCard from "@/components/pricing-card"
-import FeatureCard from "@/components/FeatureCard"
-import CursorEffect from "@/components/CursorEffect"
-import AnimatedBackground from "@/components/AnimatedBackground"
-import CodePreview from "@/components/CodePreview"
+import { ArrowRight, Code, Star, Zap, Layout, Layers, Sparkles, Lightbulb, Infinity, Globe } from "lucide-react";
+import PricingCard from "@/components/pricing-card";
+import FeatureCard from "@/components/FeatureCard";
+import CursorEffect from "@/components/CursorEffect";
+import AnimatedBackground from "@/components/AnimatedBackground";
+import CodePreview from "@/components/LandingPageCodePreview";
 import InteractiveCanvas from "@/components/InterActiveCanvas";
 import { motion } from "framer-motion"
 
@@ -98,7 +98,7 @@ export default function Home() {
 
         {/* Animated code preview */}
         <div className="mt-16 relative z-10">
-          <CodePreview />
+          <CodePreview delay={500} />
         </div>
 
         {/* Decorative elements */}
