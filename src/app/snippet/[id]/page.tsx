@@ -4,8 +4,9 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Code, ArrowLeft, Eye, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import CodePreview from "@/components/CodePreview"
+import CodePreview from "@/components/CodePreview";
 import ViewCounter from "@/components/view-counter"
+import FavoriteButton from "@/components/favorite-button"
 import type { Database } from "@/lib/database.types"
 
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
@@ -64,21 +65,24 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">{snippet.title}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center">
-                <span>By {authorName}</span>
-              </div>
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-1" />
-                <span>{new Date(snippet.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center">
-                <Eye className="h-4 w-4 mr-1" />
-                <span>{snippet.views} views</span>
+          <div className="mb-6 flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">{snippet.title}</h1>
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <span>By {authorName}</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>{new Date(snippet.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center">
+                  <Eye className="h-4 w-4 mr-1" />
+                  <span>{snippet.views} views</span>
+                </div>
               </div>
             </div>
+            <FavoriteButton snippetId={snippet.id} />
           </div>
 
           {snippet.description && (

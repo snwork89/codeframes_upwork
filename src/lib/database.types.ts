@@ -47,6 +47,26 @@ export interface Database {
           views?: number
         }
       }
+      favorites: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          snippet_id: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          snippet_id: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          snippet_id?: string
+        }
+      }
       subscriptions: {
         Row: {
           id: string

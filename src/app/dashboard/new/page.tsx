@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import DashboardLayout from "@/components/dashboard-layout"
@@ -14,6 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/hooks/use-toast"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+import type { Database } from "@/lib/database.types"
 
 export default function NewSnippet() {
   const [title, setTitle] = useState("")
@@ -24,9 +27,64 @@ export default function NewSnippet() {
   const [isPublic, setIsPublic] = useState(false)
   const [loading, setLoading] = useState(false)
   const [previewActive, setPreviewActive] = useState(false)
+  const [snippetLimit, setSnippetLimit] = useState(0)
+  const [snippetCount, setSnippetCount] = useState(0)
+  const [limitExceeded, setLimitExceeded] = useState(false)
 
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createClientComponentClient<Database>()
+
+  useEffect(() => {
+    async function getSubscriptionAndSnippets() {
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          router.push("/login")
+          return
+        }
+
+        // Get subscription data
+        const { data: subscriptionData, error: subscriptionError } = await supabase
+          .from("subscriptions")
+          .select("snippet_limit")
+          .eq("user_id", user.id)
+          .single()
+
+        if (subscriptionError) {
+          throw subscriptionError
+        }
+
+        setSnippetLimit(subscriptionData.snippet_limit)
+
+        // Count user's snippets
+        const { count, error: countError } = await supabase
+          .from("snippets")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+
+        if (countError) {
+          throw countError
+        }
+
+        const currentCount = count || 0
+        setSnippetCount(currentCount)
+        setLimitExceeded(currentCount >= subscriptionData.snippet_limit)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load subscription data",
+          variant: "destructive",
+        })
+      }
+    }
+
+    getSubscriptionAndSnippets()
+  }, [supabase, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,27 +107,8 @@ export default function NewSnippet() {
       }
 
       // Check if user has reached their snippet limit
-      const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from("subscriptions")
-        .select("snippet_limit")
-        .eq("user_id", user.id)
-        .single()
-
-      if (subscriptionError) {
-        throw subscriptionError
-      }
-
-      // Count user's existing snippets
-      const { count, error: countError } = await supabase
-        .from("snippets")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-
-      if (countError) {
-        throw countError
-      }
-
-      if (count !== null && count >= subscriptionData.snippet_limit) {
+      if (snippetCount >= snippetLimit) {
+        setLimitExceeded(true)
         toast({
           title: "Limit reached",
           description: "You've reached your snippet limit. Please upgrade your plan to create more snippets.",
@@ -87,6 +126,7 @@ export default function NewSnippet() {
         js_code: jsCode,
         user_id: user.id,
         is_public: isPublic,
+        views: 0,
       })
 
       if (error) {
@@ -133,6 +173,50 @@ export default function NewSnippet() {
     <DashboardLayout>
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Create New Snippet</h1>
+
+        {limitExceeded && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Snippet limit reached</AlertTitle>
+            <AlertDescription>
+              You've used {snippetCount} of {snippetLimit} available snippets. Please upgrade your plan to create more
+              snippets.
+              <div className="mt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white text-red-600"
+                  onClick={() => router.push("/dashboard/settings")}
+                >
+                  Upgrade Plan
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!limitExceeded && (
+          <div className="mb-6 bg-white p-4 rounded-lg border">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-500">
+                  {snippetCount} of {snippetLimit} snippets used
+                </p>
+                <div className="w-64 h-2 bg-gray-200 rounded-full mt-2">
+                  <div
+                    className="h-2 bg-purple-600 rounded-full"
+                    style={{
+                      width: `${Math.min((snippetCount / snippetLimit) * 100, 100)}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-500">
+                <span className="font-medium">{snippetLimit - snippetCount}</span> snippets remaining
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -238,7 +322,11 @@ export default function NewSnippet() {
                 </Card>
               )}
 
-              <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={loading || !title}>
+              <Button
+                type="submit"
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                disabled={loading || !title || limitExceeded}
+              >
                 {loading ? "Creating..." : "Create Snippet"}
               </Button>
             </div>

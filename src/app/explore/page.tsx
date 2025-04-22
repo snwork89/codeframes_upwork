@@ -5,6 +5,7 @@ import { Code, Eye, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import CodePreview from "@/components/CodePreview";
+import FavoriteButton from "@/components/favorite-button"
 import type { Database } from "@/lib/database.types"
 
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
@@ -106,7 +107,10 @@ function SnippetCard({ snippet }: { snippet: any }) {
   return (
     <Card className="flex flex-col h-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">{snippet.title}</CardTitle>
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-lg">{snippet.title}</CardTitle>
+          <FavoriteButton snippetId={snippet.id} size="icon" />
+        </div>
         <div className="flex items-center text-sm text-gray-500">
           <span>By {authorName}</span>
           <span className="mx-2">•</span>

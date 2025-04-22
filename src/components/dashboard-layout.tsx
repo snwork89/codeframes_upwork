@@ -3,7 +3,7 @@
 import type React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Code, Plus, Settings, LogOut, Grid, Layers } from "lucide-react"
+import { Code, Plus, Settings, LogOut, Grid, Layers, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 pathname === "/dashboard/favorites" ? "bg-purple-50 text-purple-700" : "text-gray-700",
               )}
             >
-              Favorites
+              <Heart className="h-4 w-4 mr-2" /> Favorites
             </Link>
             <Link
               href="/dashboard/settings"
