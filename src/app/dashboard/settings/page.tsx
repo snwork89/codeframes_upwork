@@ -16,7 +16,7 @@ export default function Settings() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [snippetCount, setSnippetCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
-  const [upgradeLoading, setUpgradeLoading] = useState(false)
+  const [upgradeLoading, setUpgradeLoading] = useState<string | null>(null)
   const supabase = createClientComponentClient<Database>()
   const router = useRouter()
 
@@ -73,7 +73,7 @@ export default function Settings() {
   }, [supabase, router])
 
   const handleUpgrade = async (planType: "basic" | "premium") => {
-    setUpgradeLoading(true)
+    setUpgradeLoading(planType)
 
     try {
       const {
@@ -113,7 +113,7 @@ export default function Settings() {
         variant: "destructive",
       })
     } finally {
-      setUpgradeLoading(false)
+      setUpgradeLoading(null)
     }
   }
 
@@ -266,14 +266,40 @@ export default function Settings() {
                 <Button
                   variant={subscription?.plan_type === "basic" ? "default" : "outline"}
                   className={`w-full ${subscription?.plan_type !== "basic" ? "bg-purple-600 hover:bg-purple-700" : ""}`}
-                  disabled={subscription?.plan_type === "basic" || upgradeLoading}
+                  disabled={subscription?.plan_type === "basic" || upgradeLoading === "basic"}
                   onClick={() => handleUpgrade("basic")}
                 >
-                  {subscription?.plan_type === "basic"
-                    ? "Current Plan"
-                    : subscription?.plan_type === "premium"
-                      ? "Downgrade"
-                      : "Upgrade"}
+                  {upgradeLoading === "basic" ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : subscription?.plan_type === "basic" ? (
+                    "Current Plan"
+                  ) : subscription?.plan_type === "premium" ? (
+                    "Downgrade"
+                  ) : (
+                    "Upgrade"
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -377,10 +403,38 @@ export default function Settings() {
                 <Button
                   variant={subscription?.plan_type === "premium" ? "default" : "outline"}
                   className={`w-full ${subscription?.plan_type !== "premium" && subscription?.plan_type !== "basic" ? "bg-purple-600 hover:bg-purple-700" : ""}`}
-                  disabled={subscription?.plan_type === "premium" || upgradeLoading}
+                  disabled={subscription?.plan_type === "premium" || upgradeLoading === "premium"}
                   onClick={() => handleUpgrade("premium")}
                 >
-                  {subscription?.plan_type === "premium" ? "Current Plan" : "Upgrade"}
+                  {upgradeLoading === "premium" ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : subscription?.plan_type === "premium" ? (
+                    "Current Plan"
+                  ) : (
+                    "Upgrade"
+                  )}
                 </Button>
               </CardFooter>
             </Card>

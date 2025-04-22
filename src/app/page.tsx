@@ -1,17 +1,41 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Code, Star, Zap, Layout, Layers, Sparkles, Lightbulb, Infinity, Globe } from "lucide-react";
-import PricingCard from "@/components/pricing-card";
-import FeatureCard from "@/components/FeatureCard";
-import CursorEffect from "@/components/CursorEffect";
-import AnimatedBackground from "@/components/AnimatedBackground";
-import CodePreview from "@/components/LandingPageCodePreview";
-import InteractiveCanvas from "@/components/InterActiveCanvas";
+import { ArrowRight, Code, Star, Zap, Layout, Layers, Sparkles, Lightbulb, Infinity, Globe } from "lucide-react"
+import PricingCard from "@/components/pricing-card"
+import FeatureCard from "@/components/FeatureCard"
+import CursorEffect from "@/components/CursorEffect"
+import AnimatedBackground from "@/components/AnimatedBackground"
+import CodePreview from "@/components/LandingPageCodePreview"
+import InteractiveCanvas from "@/components/InterActiveCanvas"
+import UserDropdown from "@/components/user-dropdown"
 import { motion } from "framer-motion"
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        setIsLoggedIn(!!user)
+      } catch (error) {
+        console.error("Error checking auth:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [supabase])
+
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden bg-white">
       <CursorEffect />
@@ -38,16 +62,27 @@ export default function Home() {
                 Explore
               </Button>
             </Link>
-            <Link href="/login">
-              <Button variant="ghost" className="hover:bg-purple-50 transition-colors duration-300">
-                Login
+
+            {loading ? (
+              <Button variant="ghost" disabled>
+                Loading...
               </Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg">
-                Sign Up
-              </Button>
-            </Link>
+            ) : isLoggedIn ? (
+              <UserDropdown />
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="hover:bg-purple-50 transition-colors duration-300">
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg">
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -78,12 +113,21 @@ export default function Home() {
               it from anywhere with our interactive infinite canvas.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/signup">
-                <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg hover:scale-105 w-full sm:w-auto group">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </Button>
-              </Link>
+              {isLoggedIn ? (
+                <Link href="/dashboard">
+                  <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg hover:scale-105 w-full sm:w-auto group">
+                    Go to Dashboard
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/signup">
+                  <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg hover:scale-105 w-full sm:w-auto group">
+                    Get Started
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              )}
               <Link href="#pricing">
                 <Button
                   variant="outline"
@@ -345,11 +389,19 @@ export default function Home() {
             <p className="mx-auto max-w-[700px] text-purple-100 md:text-xl mb-8">
               Join thousands of developers who use SnippetVault to manage their code library.
             </p>
-            <Link href="/signup">
-              <Button className="bg-white text-purple-600 hover:bg-purple-50 transition-all duration-300 hover:shadow-lg text-lg px-8 py-6 h-auto">
-                Get Started for Free
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button className="bg-white text-purple-600 hover:bg-purple-50 transition-all duration-300 hover:shadow-lg text-lg px-8 py-6 h-auto">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/signup">
+                <Button className="bg-white text-purple-600 hover:bg-purple-50 transition-all duration-300 hover:shadow-lg text-lg px-8 py-6 h-auto">
+                  Get Started for Free
+                </Button>
+              </Link>
+            )}
           </motion.div>
         </div>
       </section>
