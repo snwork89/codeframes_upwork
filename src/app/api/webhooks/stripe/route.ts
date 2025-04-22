@@ -59,9 +59,6 @@ export async function POST(request: Request) {
           snippetLimit = PLANS.PREMIUM.snippetLimit
         }
 
-        // Convert Unix timestamp to ISO string for database storage
-        const currentPeriodEndDate = new Date(subscription.current_period_end * 1000).toISOString()
-
         // Update subscription in database
         await supabaseAdmin
           .from("subscriptions")
@@ -70,7 +67,6 @@ export async function POST(request: Request) {
             stripe_price_id: subscription.items.data[0].price.id,
             plan_type: planType,
             status: subscription.status,
-            current_period_end: currentPeriodEndDate,
             snippet_limit: snippetLimit,
           })
           .eq("user_id", userId)
@@ -80,13 +76,11 @@ export async function POST(request: Request) {
     }
 
     case "invoice.payment_succeeded": {
-      const invoice = event.data.object as Stripe.Invoice
+      const invoice = event.data.object as Stripe.Invoice & { subscription: string }
       const subscriptionId = invoice.subscription
-
       if (!subscriptionId) {
         break
       }
-
       // Get subscription details from Stripe
       const subscription = await stripe.subscriptions.retrieve(subscriptionId as string)
 
@@ -102,15 +96,11 @@ export async function POST(request: Request) {
         break
       }
 
-      // Convert Unix timestamp to ISO string for database storage
-      const currentPeriodEndDate = new Date(subscription.current_period_end * 1000).toISOString()
-
       // Update subscription in database
       await supabaseAdmin
         .from("subscriptions")
         .update({
           status: subscription.status,
-          current_period_end: currentPeriodEndDate,
         })
         .eq("stripe_subscription_id", subscriptionId)
 
@@ -145,9 +135,6 @@ export async function POST(request: Request) {
         snippetLimit = PLANS.PREMIUM.snippetLimit
       }
 
-      // Convert Unix timestamp to ISO string for database storage
-      const currentPeriodEndDate = new Date(subscription.current_period_end * 1000).toISOString()
-
       // Update subscription in database
       await supabaseAdmin
         .from("subscriptions")
@@ -155,7 +142,6 @@ export async function POST(request: Request) {
           stripe_price_id: newPriceId,
           plan_type: newPlanType,
           status: subscription.status,
-          current_period_end: currentPeriodEndDate,
           snippet_limit: snippetLimit,
         })
         .eq("stripe_subscription_id", subscription.id)
@@ -174,7 +160,6 @@ export async function POST(request: Request) {
           stripe_price_id: null,
           plan_type: "free",
           status: "canceled",
-          current_period_end: null,
           snippet_limit: PLANS.FREE.snippetLimit,
         })
         .eq("stripe_subscription_id", subscription.id)

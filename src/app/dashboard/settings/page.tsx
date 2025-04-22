@@ -14,13 +14,14 @@ type Subscription = Database["public"]["Tables"]["subscriptions"]["Row"]
 
 export default function Settings() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [snippetCount, setSnippetCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [upgradeLoading, setUpgradeLoading] = useState(false)
   const supabase = createClientComponentClient<Database>()
   const router = useRouter()
 
   useEffect(() => {
-    async function getSubscription() {
+    async function getSubscriptionAndSnippets() {
       try {
         const {
           data: { user },
@@ -32,15 +33,32 @@ export default function Settings() {
           return
         }
 
-        const { data, error } = await supabase.from("subscriptions").select("*").eq("user_id", user.id).single()
+        // Get subscription data
+        const { data: subscriptionData, error: subscriptionError } = await supabase
+          .from("subscriptions")
+          .select("*")
+          .eq("user_id", user.id)
+          .single()
 
-        if (error) {
-          throw error
+        if (subscriptionError) {
+          throw subscriptionError
         }
 
-        setSubscription(data)
+        setSubscription(subscriptionData)
+
+        // Count user's snippets
+        const { count, error: countError } = await supabase
+          .from("snippets")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+
+        if (countError) {
+          throw countError
+        }
+
+        setSnippetCount(count || 0)
       } catch (error) {
-        console.error("Error fetching subscription:", error)
+        console.error("Error fetching data:", error)
         toast({
           title: "Error",
           description: "Failed to load subscription data",
@@ -51,7 +69,7 @@ export default function Settings() {
       }
     }
 
-    getSubscription()
+    getSubscriptionAndSnippets()
   }, [supabase, router])
 
   const handleUpgrade = async (planType: "basic" | "premium") => {
@@ -75,7 +93,7 @@ export default function Settings() {
         },
         body: JSON.stringify({
           planType,
-          userId: user.id, // Pass the user ID from getUser
+          userId: user.id,
         }),
       })
 
@@ -115,6 +133,7 @@ export default function Settings() {
   }
 
   const currentPlan = getCurrentPlan()
+  const snippetsRemaining = subscription ? subscription.snippet_limit - snippetCount : 0
 
   return (
     <DashboardLayout>
@@ -387,17 +406,24 @@ export default function Settings() {
                       <p className="text-lg font-medium capitalize">{subscription.status}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Snippet Limit</p>
-                      <p className="text-lg font-medium">{subscription.snippet_limit}</p>
+                      <p className="text-sm font-medium text-gray-500">Snippets Used</p>
+                      <p className="text-lg font-medium">
+                        {snippetCount} of {subscription.snippet_limit}
+                      </p>
                     </div>
-                    {subscription.current_period_end && subscription.plan_type !== "free" && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Next Billing Date</p>
-                        <p className="text-lg font-medium">
-                          {new Date(subscription.current_period_end).toLocaleDateString()}
-                        </p>
-                      </div>
-                    )}
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Snippets Remaining</p>
+                      <p className="text-lg font-medium">{snippetsRemaining}</p>
+                    </div>
+                  </div>
+
+                  <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
+                    <div
+                      className="h-2 bg-purple-600 rounded-full"
+                      style={{
+                        width: `${Math.min((snippetCount / subscription.snippet_limit) * 100, 100)}%`,
+                      }}
+                    ></div>
                   </div>
                 </div>
               </CardContent>
