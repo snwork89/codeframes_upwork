@@ -116,7 +116,7 @@ export default async function Dashboard() {
                       <Pencil className="h-4 w-4 mr-2" /> Edit
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/view/${snippet.id}`}>
+                  <Link href={snippet.is_public ? `/snippet/${snippet.id}` : `/dashboard/view/${snippet.id}`}>
                     <Button variant="outline" size="sm">
                       <ExternalLink className="h-4 w-4 mr-2" /> View
                     </Button>
