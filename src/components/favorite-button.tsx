@@ -5,6 +5,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 import type { Database } from "@/lib/database.types"
 
 interface FavoriteButtonProps {
@@ -26,6 +27,7 @@ export default function FavoriteButton({
   const [isLoading, setIsLoading] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const supabase = createClientComponentClient<Database>()
+  const router = useRouter()
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -52,11 +54,12 @@ export default function FavoriteButton({
 
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
+      // Redirect to login if not authenticated
       toast({
         title: "Authentication required",
         description: "Please sign in to favorite snippets",
-        variant: "destructive",
       })
+      router.push(`/login?redirect=/snippet/${snippetId}`)
       return
     }
 
@@ -71,8 +74,8 @@ export default function FavoriteButton({
         toast({
           title: "Authentication required",
           description: "Please sign in to favorite snippets",
-          variant: "destructive",
         })
+        router.push(`/login?redirect=/snippet/${snippetId}`)
         return
       }
 

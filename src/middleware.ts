@@ -12,14 +12,17 @@ export async function middleware(req: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // If user is not signed in and the current path is not / or /login or /signup
-    // redirect the user to /login
+    // Public routes that don't require authentication
+    const publicRoutes = ["/", "/login", "/signup", "/explore", "/auth/callback"]
+
+    // Check if the path starts with /snippet/ (public snippet view)
+    const isPublicSnippetView = req.nextUrl.pathname.startsWith("/snippet/")
+
+    // If user is not signed in and the current path is not a public route
     if (
       !user &&
-      !req.nextUrl.pathname.startsWith("/login") &&
-      !req.nextUrl.pathname.startsWith("/signup") &&
-      req.nextUrl.pathname !== "/" &&
-      req.nextUrl.pathname !== "/explore" &&
+      !publicRoutes.includes(req.nextUrl.pathname) &&
+      !isPublicSnippetView &&
       !req.nextUrl.pathname.startsWith("/auth/")
     ) {
       return NextResponse.redirect(new URL("/login", req.url))
@@ -37,10 +40,15 @@ export async function middleware(req: NextRequest) {
     }
   } catch (error) {
     // If there's an error verifying the session, redirect to login
+    // But allow access to public routes
+    const publicRoutes = ["/", "/login", "/signup", "/explore", "/auth/callback"]
+
+    // Check if the path starts with /snippet/ (public snippet view)
+    const isPublicSnippetView = req.nextUrl.pathname.startsWith("/snippet/")
+
     if (
-      !req.nextUrl.pathname.startsWith("/login") &&
-      !req.nextUrl.pathname.startsWith("/signup") &&
-      req.nextUrl.pathname !== "/" &&
+      !publicRoutes.includes(req.nextUrl.pathname) &&
+      !isPublicSnippetView &&
       !req.nextUrl.pathname.startsWith("/auth/")
     ) {
       return NextResponse.redirect(new URL("/login", req.url))
