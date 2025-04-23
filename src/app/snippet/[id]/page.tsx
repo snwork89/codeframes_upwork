@@ -4,7 +4,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Code, ArrowLeft, Eye, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import CodePreview from "@/components/CodePreview";
+import CodePreview from "@/components/CodePreview"
 import ViewCounter from "@/components/view-counter"
 import FavoriteButton from "@/components/favorite-button"
 import type { Database } from "@/lib/database.types"
@@ -24,7 +24,7 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
   // Get snippet details
   const { data: snippet, error } = await supabase
     .from("snippets")
-    .select("*, profiles(full_name, email)")
+    .select("*")
     .eq("id", id)
     .eq("is_public", true)
     .single()
@@ -33,7 +33,7 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
     notFound()
   }
 
-  const authorName = snippet.profiles?.full_name || snippet.profiles?.email?.split("@")[0] || "Anonymous"
+  const authorName = "Anonymous" // Simplified for now
 
   return (
     <div className="min-h-screen bg-gray-50">
