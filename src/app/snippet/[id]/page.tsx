@@ -21,7 +21,7 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
   const { id } = params
   const supabase = createServerComponentClient<Database>({ cookies })
 
-  // Get snippet details
+  // Get snippet details - only public snippets are accessible
   const { data: snippet, error } = await supabase
     .from("snippets")
     .select("*")
@@ -33,7 +33,21 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
     notFound()
   }
 
-  const authorName = "Anonymous" // Simplified for now
+  // Get author information if available
+  let authorName = "Anonymous"
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", snippet.user_id)
+      .single()
+
+    if (profile) {
+      authorName = profile.full_name || profile.email?.split("@")[0] || "Anonymous"
+    }
+  } catch (error) {
+    console.error("Error fetching author:", error)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,7 +92,7 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
                 </div>
                 <div className="flex items-center">
                   <Eye className="h-4 w-4 mr-1" />
-                  <span>{snippet.views} views</span>
+                  <span>{snippet.views || 0} views</span>
                 </div>
               </div>
             </div>

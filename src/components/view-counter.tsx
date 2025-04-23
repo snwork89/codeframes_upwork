@@ -37,11 +37,11 @@ export default function ViewCounter({ snippetId }: ViewCounterProps) {
       }
     }
 
-    // Use session storage to prevent multiple counts from the same user in the same session
-    const viewedSnippets = JSON.parse(sessionStorage.getItem("viewedSnippets") || "[]")
+    // Use localStorage to prevent multiple counts from the same user
+    const viewedSnippets = JSON.parse(localStorage.getItem("viewedSnippets") || "[]")
     if (!viewedSnippets.includes(snippetId)) {
       incrementViewCount()
-      sessionStorage.setItem("viewedSnippets", JSON.stringify([...viewedSnippets, snippetId]))
+      localStorage.setItem("viewedSnippets", JSON.stringify([...viewedSnippets, snippetId]))
     }
   }, [snippetId, supabase])
 

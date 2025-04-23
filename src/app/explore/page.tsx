@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Code, Eye, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import CodePreview from "@/components/CodePreview";
+import CodePreview from "@/components/CodePreview"
 import FavoriteButton from "@/components/favorite-button"
 import type { Database } from "@/lib/database.types"
 
@@ -115,7 +115,7 @@ function SnippetCard({ snippet }: { snippet: any }) {
           <span>By {authorName}</span>
           <span className="mx-2">•</span>
           <span className="flex items-center">
-            <Eye className="h-4 w-4 mr-1" /> {snippet.views}
+            <Eye className="h-4 w-4 mr-1" /> {snippet.views || 0}
           </span>
         </div>
       </CardHeader>
