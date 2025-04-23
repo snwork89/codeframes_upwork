@@ -18,7 +18,7 @@ export default async function ExplorePage() {
   // Get popular public snippets
   const { data: popularSnippets, error: popularError } = await supabase
     .from("snippets")
-    .select("*, profiles(full_name, email)")
+    .select("*, user_id")
     .eq("is_public", true)
     .order("views", { ascending: false })
     .limit(6)
@@ -26,7 +26,7 @@ export default async function ExplorePage() {
   // Get recent public snippets
   const { data: recentSnippets, error: recentError } = await supabase
     .from("snippets")
-    .select("*, profiles(full_name, email)")
+    .select("*, user_id")
     .eq("is_public", true)
     .order("created_at", { ascending: false })
     .limit(6)
@@ -102,7 +102,7 @@ export default async function ExplorePage() {
 }
 
 function SnippetCard({ snippet }: { snippet: any }) {
-  const authorName = snippet.profiles?.full_name || snippet.profiles?.email?.split("@")[0] || "Anonymous"
+  const authorName = "User" // Simplified for now
 
   return (
     <Card className="flex flex-col h-full">
