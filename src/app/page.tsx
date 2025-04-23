@@ -1,91 +1,58 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Code, Star, Zap, Layout, Layers, Sparkles, Lightbulb, Infinity, Globe } from "lucide-react"
-import PricingCard from "@/components/pricing-card"
-import FeatureCard from "@/components/FeatureCard"
-import CursorEffect from "@/components/CursorEffect"
-import AnimatedBackground from "@/components/AnimatedBackground"
-import CodePreview from "@/components/LandingPageCodePreview"
-import InteractiveCanvas from "@/components/InterActiveCanvas"
-import UserDropdown from "@/components/user-dropdown"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  Code,
+  Star,
+  Zap,
+  Layout,
+  Layers,
+  Sparkles,
+  Lightbulb,
+  Infinity,
+  Globe,
+} from "lucide-react";
+import PricingCard from "@/components/pricing-card";
+import FeatureCard from "@/components/FeatureCard";
+import CursorEffect from "@/components/CursorEffect";
+import AnimatedBackground from "@/components/AnimatedBackground";
+import CodePreview from "@/components/LandingPageCodePreview";
+import InteractiveCanvas from "@/components/InterActiveCanvas";
+import UserDropdown from "@/components/user-dropdown";
+import { motion } from "framer-motion";
+import HeaderComponent from "@/components/HeaderComponent";
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const supabase = createClientComponentClient()
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
     async function checkAuth() {
       try {
         const {
           data: { user },
-        } = await supabase.auth.getUser()
-        setIsLoggedIn(!!user)
+        } = await supabase.auth.getUser();
+        setIsLoggedIn(!!user);
       } catch (error) {
-        console.error("Error checking auth:", error)
+        console.error("Error checking auth:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    checkAuth()
-  }, [supabase])
+    checkAuth();
+  }, [supabase]);
 
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden bg-white">
       <CursorEffect />
       <AnimatedBackground />
-
-      {/* Navigation */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between py-4 px-4 md:px-6">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 opacity-75 blur group-hover:opacity-100 transition duration-300"></div>
-              <div className="relative bg-white rounded-full p-1">
-                <Code className="h-6 w-6 text-purple-600 transition-transform duration-300 group-hover:rotate-12" />
-              </div>
-            </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
-              SnippetVault
-            </span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/explore">
-              <Button variant="ghost" className="hover:bg-purple-50 transition-colors duration-300">
-                <Globe className="h-4 w-4 mr-2" />
-                Explore
-              </Button>
-            </Link>
-
-            {loading ? (
-              <Button variant="ghost" disabled>
-                Loading...
-              </Button>
-            ) : isLoggedIn ? (
-              <UserDropdown />
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" className="hover:bg-purple-50 transition-colors duration-300">
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <HeaderComponent />
 
       {/* Hero Section */}
       <section className="py-20 relative overflow-hidden">
@@ -109,8 +76,9 @@ export default function Home() {
               </span>
             </h1>
             <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl mb-8">
-              Save HTML, CSS, and JavaScript snippets with live preview. Organize your code library visually and access
-              it from anywhere with our interactive infinite canvas.
+              Save HTML, CSS, and JavaScript snippets with live preview.
+              Organize your code library visually and access it from anywhere
+              with our interactive infinite canvas.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               {isLoggedIn ? (
@@ -166,11 +134,13 @@ export default function Home() {
               </span>
             </div>
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
-              Organize on an <span className="text-purple-700">Infinite Canvas</span>
+              Organize on an{" "}
+              <span className="text-purple-700">Infinite Canvas</span>
             </h2>
             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
-              Arrange your snippets spatially, group related code, and visualize your entire collection at once. Drag,
-              zoom, and organize your code in a way that makes sense to you.
+              Arrange your snippets spatially, group related code, and visualize
+              your entire collection at once. Drag, zoom, and organize your code
+              in a way that makes sense to you.
             </p>
           </motion.div>
 
@@ -193,7 +163,8 @@ export default function Home() {
                 <h3 className="font-semibold text-lg">Spatial Organization</h3>
               </div>
               <p className="text-gray-500">
-                Organize your snippets visually in a way that mirrors your mental model. Group related code together.
+                Organize your snippets visually in a way that mirrors your
+                mental model. Group related code together.
               </p>
             </motion.div>
 
@@ -211,7 +182,8 @@ export default function Home() {
                 <h3 className="font-semibold text-lg">Drag & Drop</h3>
               </div>
               <p className="text-gray-500">
-                Easily move and arrange your snippets with intuitive drag and drop functionality.
+                Easily move and arrange your snippets with intuitive drag and
+                drop functionality.
               </p>
             </motion.div>
 
@@ -228,7 +200,10 @@ export default function Home() {
                 </div>
                 <h3 className="font-semibold text-lg">Instant Preview</h3>
               </div>
-              <p className="text-gray-500">See your code in action with real-time previews that update as you type.</p>
+              <p className="text-gray-500">
+                See your code in action with real-time previews that update as
+                you type.
+              </p>
             </motion.div>
           </div>
         </div>
@@ -249,9 +224,12 @@ export default function Home() {
                 <Sparkles className="h-6 w-6 text-purple-600" />
               </span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">Powerful Features</h2>
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
+              Powerful Features
+            </h2>
             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
-              Everything you need to manage your code snippets efficiently on an infinite canvas.
+              Everything you need to manage your code snippets efficiently on an
+              infinite canvas.
             </p>
           </motion.div>
 
@@ -325,7 +303,11 @@ export default function Home() {
               title="Free"
               price="$0"
               description="Perfect for getting started"
-              features={["Save up to 10 code snippets", "Live preview", "Basic organization"]}
+              features={[
+                "Save up to 10 code snippets",
+                "Live preview",
+                "Basic organization",
+              ]}
               buttonText="Get Started"
               buttonVariant="outline"
               href="/signup"
@@ -335,7 +317,12 @@ export default function Home() {
               title="Basic"
               price="$20"
               description="For growing snippet collections"
-              features={["Save up to 100 code snippets", "Live preview", "Advanced organization", "Snippet sharing"]}
+              features={[
+                "Save up to 100 code snippets",
+                "Live preview",
+                "Advanced organization",
+                "Snippet sharing",
+              ]}
               buttonText="Subscribe"
               buttonVariant="default"
               href="/signup"
@@ -387,7 +374,8 @@ export default function Home() {
               Ready to organize your code snippets?
             </h2>
             <p className="mx-auto max-w-[700px] text-purple-100 md:text-xl mb-8">
-              Join thousands of developers who use SnippetVault to manage their code library.
+              Join thousands of developers who use SnippetVault to manage their
+              code library.
             </p>
             {isLoggedIn ? (
               <Link href="/dashboard">
@@ -415,16 +403,28 @@ export default function Home() {
               <span className="text-xl font-bold">SnippetVault</span>
             </div>
             <div className="flex flex-wrap justify-center gap-8">
-              <Link href="/terms" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+              <Link
+                href="/terms"
+                className="text-gray-500 hover:text-purple-600 transition-colors duration-300"
+              >
                 Terms
               </Link>
-              <Link href="/privacy" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+              <Link
+                href="/privacy"
+                className="text-gray-500 hover:text-purple-600 transition-colors duration-300"
+              >
                 Privacy
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+              <Link
+                href="#"
+                className="text-gray-500 hover:text-purple-600 transition-colors duration-300"
+              >
                 Documentation
               </Link>
-              <Link href="#" className="text-gray-500 hover:text-purple-600 transition-colors duration-300">
+              <Link
+                href="#"
+                className="text-gray-500 hover:text-purple-600 transition-colors duration-300"
+              >
                 Blog
               </Link>
             </div>
@@ -435,5 +435,5 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

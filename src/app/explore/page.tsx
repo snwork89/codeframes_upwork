@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import CodePreview from "@/components/CodePreview"
 import FavoriteButton from "@/components/favorite-button"
 import type { Database } from "@/lib/database.types"
+import HeaderComponent from "@/components/HeaderComponent"
 
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
 
@@ -38,22 +39,7 @@ export default async function ExplorePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto py-4 px-4 md:px-6 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Code className="h-6 w-6 text-purple-600" />
-            <span className="font-bold text-xl">SnippetVault</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-purple-600 hover:bg-purple-700">Sign Up</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <HeaderComponent />
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-16">
