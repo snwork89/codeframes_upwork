@@ -53,7 +53,7 @@ export default function CodePreview({
       <iframe
         srcDoc={renderPreview()}
         title="Code Preview"
-        className="w-full h-full border-0 bg-white"
+        className="w-max h-max border-0 bg-white"
         sandbox="allow-scripts"
         style={{ height: `calc(${height} - 28px)` }}
       />
