@@ -74,10 +74,11 @@ export default function CanvasView() {
   const [publicAccessId, setPublicAccessId] = useState<string | null>(null)
   const [shareUrl, setShareUrl] = useState("")
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
-
-  const reactFlowInstance = useReactFlow()
+  const reactFlowInstance = useReactFlow();
+  const { setViewport, getViewport, } = useReactFlow()
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const initialLoadRef = useRef(true)
+
 
   const router = useRouter()
   const supabase = createClientComponentClient<Database>()
@@ -119,15 +120,6 @@ export default function CanvasView() {
           if (canvasSettings.is_public && canvasSettings.public_access_id) {
             const baseUrl = window.location.origin
             setShareUrl(`${baseUrl}/canvas/${canvasSettings.public_access_id}`)
-          }
-
-          // Set viewport if we have saved settings
-          if (reactFlowInstance && initialLoadRef.current) {
-            reactFlowInstance.setViewport({
-              x: canvasSettings.position_x,
-              y: canvasSettings.position_y,
-              zoom: canvasSettings.zoom,
-            })
           }
         }
 
@@ -202,7 +194,44 @@ export default function CanvasView() {
     }
 
     loadSnippetsAndPositions()
-  }, [supabase, router, reactFlowInstance])
+  }, [supabase, router])
+
+  // Add a new useEffect specifically for setting the viewport
+  useEffect(() => {
+    async function loadViewport() {
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+
+        if (userError || !user) return
+
+        const { data: canvasSettings } = await supabase
+          .from("canvas_settings")
+          .select("zoom, position_x, position_y")
+          .eq("user_id", user.id)
+          .single()
+
+        if (canvasSettings && !loading) {
+          // Only set viewport when loading is complete and we have the settings
+          setTimeout(() => {
+            setViewport({
+              x: canvasSettings.position_x || 0,
+              y: canvasSettings.position_y || 0,
+              zoom: canvasSettings.zoom || 1,
+            })
+          }, 100)
+        }
+      } catch (error) {
+        console.error("Error loading viewport settings:", error)
+      }
+    }
+
+    if (!loading) {
+      loadViewport()
+    }
+  }, [loading, setViewport, supabase])
 
   // Save node positions when they change
   const onNodesChange = useCallback((changes: any) => {
@@ -469,9 +498,9 @@ export default function CanvasView() {
           public_access_id: accessId,
           updated_at: new Date().toISOString(),
           // Keep existing viewport settings
-          zoom: reactFlowInstance ? reactFlowInstance.getViewport().zoom : 1,
-          position_x: reactFlowInstance ? reactFlowInstance.getViewport().x : 0,
-          position_y: reactFlowInstance ? reactFlowInstance.getViewport().y : 0,
+          zoom: reactFlowInstance ? getViewport().zoom : 1,
+          position_x: reactFlowInstance ? getViewport().x : 0,
+          position_y: reactFlowInstance ? getViewport().y : 0,
         },
         {
           onConflict: "user_id",
