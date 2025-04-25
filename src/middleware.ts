@@ -12,26 +12,26 @@ export async function middleware(req: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // Update the middleware to allow public canvas access and landing page visits
-
-    // Modify the public routes array to include canvas public views
+    // Public routes that don't require authentication
     const publicRoutes = ["/", "/login", "/signup", "/explore", "/auth/callback"]
 
-    // Check if the path starts with /snippet/ or /canvas/ (public views)
-    const isPublicView = req.nextUrl.pathname.startsWith("/snippet/") || req.nextUrl.pathname.startsWith("/canvas/")
+    // Check if the path starts with /snippet/ (public snippet view) or /canvas/ (public canvas view)
+    const isPublicSnippetView = req.nextUrl.pathname.startsWith("/snippet/")
+    const isPublicCanvasView = req.nextUrl.pathname.startsWith("/canvas/")
 
-    // Update the condition to use isPublicView instead of isPublicSnippetView
+    // If user is not signed in and the current path is not a public route
     if (
       !user &&
       !publicRoutes.includes(req.nextUrl.pathname) &&
-      !isPublicView &&
+      !isPublicSnippetView &&
+      !isPublicCanvasView &&
       !req.nextUrl.pathname.startsWith("/auth/")
     ) {
       return NextResponse.redirect(new URL("/login", req.url))
     }
 
-    // Remove the automatic redirect from landing page for logged-in users
-    // by changing this condition to only redirect from login and signup pages
+    // If user is signed in and the current path is /login or /signup
+    // redirect the user to /dashboard
     if (user && (req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/signup"))) {
       return NextResponse.redirect(new URL("/dashboard", req.url))
     }
@@ -40,12 +40,16 @@ export async function middleware(req: NextRequest) {
     // But allow access to public routes
     const publicRoutes = ["/", "/login", "/signup", "/explore", "/auth/callback"]
 
-    // Check if the path starts with /snippet/ or /canvas/ (public views)
-    const isPublicView = req.nextUrl.pathname.startsWith("/snippet/") || req.nextUrl.pathname.startsWith("/canvas/")
+    // Check if the path starts with /snippet/ (public snippet view) or /canvas/ (public canvas view)
+    const isPublicSnippetView = req.nextUrl.pathname.startsWith("/snippet/")
+    const isPublicCanvasView = req.nextUrl.pathname.startsWith("/canvas/")
 
-    // Also update the catch block with the same changes
-    // In the catch block, update the condition:
-    if (!publicRoutes.includes(req.nextUrl.pathname) && !isPublicView && !req.nextUrl.pathname.startsWith("/auth/")) {
+    if (
+      !publicRoutes.includes(req.nextUrl.pathname) &&
+      !isPublicSnippetView &&
+      !isPublicCanvasView &&
+      !req.nextUrl.pathname.startsWith("/auth/")
+    ) {
       return NextResponse.redirect(new URL("/login", req.url))
     }
   }

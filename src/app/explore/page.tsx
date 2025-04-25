@@ -1,7 +1,7 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import Link from "next/link"
-import { Code, Eye, ExternalLink, Layers, User } from "lucide-react"
+import { Code, Eye, ExternalLink, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import CodePreview from "@/components/CodePreview"
@@ -15,10 +15,18 @@ export const revalidate = 3600 // Revalidate this page every hour
 export default async function ExplorePage() {
   const supabase = createServerComponentClient<Database>({ cookies })
 
+  // Get public canvases
+  const { data: publicCanvases, error: canvasError } = await supabase
+    .from("canvas_settings")
+    .select("*, profiles:user_id(full_name, email)")
+    .eq("is_public", true)
+    .order("updated_at", { ascending: false })
+    .limit(6)
+
   // Get popular public snippets
   const { data: popularSnippets, error: popularError } = await supabase
     .from("snippets")
-    .select("*, user_id")
+    .select("*, profiles:user_id(full_name, email)")
     .eq("is_public", true)
     .order("views", { ascending: false })
     .limit(6)
@@ -26,26 +34,9 @@ export default async function ExplorePage() {
   // Get recent public snippets
   const { data: recentSnippets, error: recentError } = await supabase
     .from("snippets")
-    .select("*, user_id")
+    .select("*, profiles:user_id(full_name, email)")
     .eq("is_public", true)
     .order("created_at", { ascending: false })
-    .limit(6)
-
-  // Get public canvases
-  const { data: publicCanvases, error: canvasError } = await supabase
-    .from("canvas_settings")
-    .select(`
-      id,
-      user_id,
-      public_access_id,
-      updated_at,
-      profiles:user_id (
-        full_name,
-        email
-      )
-    `)
-    .eq("is_public", true)
-    .order("updated_at", { ascending: false })
     .limit(6)
 
   if (popularError || recentError || canvasError) {
@@ -95,26 +86,24 @@ export default async function ExplorePage() {
               const authorName = profile?.full_name || profile?.email?.split("@")[0] || "Anonymous"
 
               return (
-                <Card key={canvas.id} className="flex flex-col h-full">
+                <Card key={canvas.id} className="flex flex-col">
                   <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">Canvas by {authorName}</CardTitle>
-                      <Layers className="h-5 w-5 text-purple-500" />
-                    </div>
+                    <CardTitle className="text-lg flex items-center">
+                      <Layers className="h-5 w-5 mr-2 text-purple-600" />
+                      Canvas by {authorName}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="py-2 flex-grow">
-                    <div className="bg-gradient-to-br from-purple-50 to-white rounded-lg border border-purple-100 h-32 flex items-center justify-center">
-                      <div className="text-center">
-                        <Layers className="h-8 w-8 text-purple-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500">Interactive Code Canvas</p>
+                    <div className="bg-gray-50 h-32 rounded-md border flex items-center justify-center">
+                      <div className="text-center p-4">
+                        <p className="text-sm text-gray-500">
+                          View this user's public snippets arranged on an interactive canvas
+                        </p>
                       </div>
                     </div>
-                    <div className="mt-4 flex items-center text-sm text-gray-500">
-                      <User className="h-4 w-4 mr-1" />
-                      <span>By {authorName}</span>
-                      <span className="mx-2">•</span>
-                      <span>Updated {new Date(canvas.updated_at).toLocaleDateString()}</span>
-                    </div>
+                    <p className="text-xs text-gray-400 mt-3">
+                      Last updated: {new Date(canvas.updated_at).toLocaleDateString()}
+                    </p>
                   </CardContent>
                   <CardFooter className="pt-2">
                     <Link href={`/canvas/${canvas.public_access_id}`} className="w-full">
@@ -166,7 +155,8 @@ export default async function ExplorePage() {
 }
 
 function SnippetCard({ snippet }: { snippet: any }) {
-  const authorName = "User" // Simplified for now
+  const profile = snippet.profiles as any
+  const authorName = profile?.full_name || profile?.email?.split("@")[0] || "Anonymous"
 
   return (
     <Card className="flex flex-col h-full">
@@ -175,6 +165,7 @@ function SnippetCard({ snippet }: { snippet: any }) {
           <CardTitle className="text-lg">{snippet.title}</CardTitle>
           <FavoriteButton snippetId={snippet.id} size="icon" />
         </div>
+        <div className="flex items-center text-sm text-gray-500"></div>
         <div className="flex items-center text-sm text-gray-500">
           <span>By {authorName}</span>
           <span className="mx-2">•</span>

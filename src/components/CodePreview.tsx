@@ -55,7 +55,7 @@ export default function CodePreview({
         title="Code Preview"
         className="w-full h-full border-0 bg-white"
         sandbox="allow-scripts"
-      
+        
         style={{ height: `calc(${height} - 28px)` }}
       />
     </div>
