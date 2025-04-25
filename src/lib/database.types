@@ -47,6 +47,70 @@ export interface Database {
           views?: number
         }
       }
+      canvas_positions: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+          snippet_id: string
+          position_x: number
+          position_y: number
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+          snippet_id: string
+          position_x: number
+          position_y: number
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+          snippet_id?: string
+          position_x?: number
+          position_y?: number
+        }
+      }
+      canvas_settings: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+          zoom: number
+          position_x: number
+          position_y: number
+          public_access_id: string | null
+          is_public: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+          zoom?: number
+          position_x?: number
+          position_y?: number
+          public_access_id?: string | null
+          is_public?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+          zoom?: number
+          position_x?: number
+          position_y?: number
+          public_access_id?: string | null
+          is_public?: boolean
+        }
+      }
       favorites: {
         Row: {
           id: string

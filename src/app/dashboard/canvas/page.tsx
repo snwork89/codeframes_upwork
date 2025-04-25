@@ -1,13 +1,26 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { useRouter } from "next/navigation"
 import DashboardLayout from "@/components/dashboard-layout"
 import CodePreview from "@/components/CodePreview"
-import { Pencil, Trash2, Plus, Save, X } from "lucide-react"
+import { Pencil, Trash2, Plus, Save, X, Share2, Lock, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
+import { nanoid } from "nanoid"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import type { Database } from "@/lib/database.types"
 import {
   addEdge,
@@ -17,21 +30,25 @@ import {
   Controls,
   MiniMap,
   ReactFlow,
+  useReactFlow,
   type Node,
   type Edge,
   type NodeProps,
   type NodeTypes,
+  type Viewport,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
+type CanvasPosition = Database["public"]["Tables"]["canvas_positions"]["Row"]
+type CanvasSettings = Database["public"]["Tables"]["canvas_settings"]["Row"]
 
 const rfStyle = {
   backgroundColor: "rgb(247 247 247)",
 }
 
 const TextUpdaterNode = ({ data, selected }: NodeProps) => {
-  const { html, css, js, title }:any = data
+  const { html, css, js, title }: any = data
 
   return (
     <div className="p-1">
@@ -52,6 +69,15 @@ export default function CanvasView() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [savingCanvas, setSavingCanvas] = useState(false)
+  const [isPublicCanvas, setIsPublicCanvas] = useState(false)
+  const [publicAccessId, setPublicAccessId] = useState<string | null>(null)
+  const [shareUrl, setShareUrl] = useState("")
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+
+  const reactFlowInstance = useReactFlow()
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const initialLoadRef = useRef(true)
 
   const router = useRouter()
   const supabase = createClientComponentClient<Database>()
@@ -60,9 +86,9 @@ export default function CanvasView() {
     textUpdater: TextUpdaterNode,
   }
 
-  // Load snippets from Supabase
+  // Load snippets and canvas positions from Supabase
   useEffect(() => {
-    async function loadSnippets() {
+    async function loadSnippetsAndPositions() {
       try {
         const {
           data: { user },
@@ -74,6 +100,38 @@ export default function CanvasView() {
           return
         }
 
+        // Get canvas settings
+        const { data: canvasSettings, error: settingsError } = await supabase
+          .from("canvas_settings")
+          .select("*")
+          .eq("user_id", user.id)
+          .single()
+
+        if (settingsError && settingsError.code !== "PGRST116") {
+          console.error("Error fetching canvas settings:", settingsError)
+        }
+
+        if (canvasSettings) {
+          setIsPublicCanvas(canvasSettings.is_public)
+          setPublicAccessId(canvasSettings.public_access_id)
+
+          // Set share URL if public access is enabled
+          if (canvasSettings.is_public && canvasSettings.public_access_id) {
+            const baseUrl = window.location.origin
+            setShareUrl(`${baseUrl}/canvas/${canvasSettings.public_access_id}`)
+          }
+
+          // Set viewport if we have saved settings
+          if (reactFlowInstance && initialLoadRef.current) {
+            reactFlowInstance.setViewport({
+              x: canvasSettings.position_x,
+              y: canvasSettings.position_y,
+              zoom: canvasSettings.zoom,
+            })
+          }
+        }
+
+        // Get snippets
         const { data: snippets, error } = await supabase
           .from("snippets")
           .select("*")
@@ -82,30 +140,55 @@ export default function CanvasView() {
 
         if (error) throw error
 
+        // Get saved positions
+        const { data: positions, error: positionsError } = await supabase
+          .from("canvas_positions")
+          .select("*")
+          .eq("user_id", user.id)
+
+        if (positionsError) {
+          console.error("Error fetching positions:", positionsError)
+        }
+
+        // Create a map of snippet positions
+        const positionMap = new Map()
+        if (positions) {
+          positions.forEach((pos) => {
+            positionMap.set(pos.snippet_id, { x: pos.position_x, y: pos.position_y })
+          })
+        }
+
         if (snippets) {
           // Convert snippets to nodes
-          const snippetNodes: Node[] = snippets.map((snippet, index) => ({
-            id: snippet.id,
-            type: "textUpdater",
-            position: {
+          const snippetNodes: Node[] = snippets.map((snippet, index) => {
+            // Use saved position if available, otherwise use default grid layout
+            const position = positionMap.get(snippet.id) || {
               x: 100 + (index % 3) * 350,
               y: 100 + Math.floor(index / 3) * 300,
-            },
-            data: {
-              html: snippet.html_code || "",
-              css: snippet.css_code || "",
-              js: snippet.js_code || "",
-              title: snippet.title,
-              description: snippet.description,
-              is_public: snippet.is_public,
-              dbId: snippet.id,
-            },
-            draggable: true,
-            selectable: true,
-          }))
+            }
+
+            return {
+              id: snippet.id,
+              type: "textUpdater",
+              position,
+              data: {
+                html: snippet.html_code || "",
+                css: snippet.css_code || "",
+                js: snippet.js_code || "",
+                title: snippet.title,
+                description: snippet.description,
+                is_public: snippet.is_public,
+                dbId: snippet.id,
+              },
+              draggable: true,
+              selectable: true,
+            }
+          })
 
           setNodes(snippetNodes)
         }
+
+        initialLoadRef.current = false
       } catch (error) {
         console.error("Error loading snippets:", error)
         toast({
@@ -118,16 +201,117 @@ export default function CanvasView() {
       }
     }
 
-    loadSnippets()
-  }, [supabase, router])
+    loadSnippetsAndPositions()
+  }, [supabase, router, reactFlowInstance])
 
-  const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), [])
+  // Save node positions when they change
+  const onNodesChange = useCallback((changes: any) => {
+    setNodes((nds) => {
+      const updatedNodes = applyNodeChanges(changes, nds)
+
+      // Check if any node position has changed
+      const positionChanges = changes.filter((change:any) => change.type === "position" && change.position)
+
+      if (positionChanges.length > 0) {
+        // Debounce saving to database
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current)
+        }
+
+        saveTimeoutRef.current = setTimeout(() => {
+          saveNodePositions(positionChanges, updatedNodes)
+        }, 500)
+      }
+
+      return updatedNodes
+    })
+  }, [])
+
+  // Save viewport (zoom and position) when it changes
+  const onMoveEnd = useCallback((event: any, viewport: Viewport) => {
+    saveCanvasSettings(viewport)
+  }, [])
+
+  // Save node positions to database
+  const saveNodePositions = async (changes: any[], nodes: Node[]) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+
+      if (userError || !user) return
+
+      // Process each position change
+      for (const change of changes) {
+        const nodeId = change.id
+        const node = nodes.find((n) => n.id === nodeId)
+
+        if (node && change.position) {
+          // Update or insert position in database
+          const { error } = await supabase.from("canvas_positions").upsert(
+            {
+              user_id: user.id,
+              snippet_id: nodeId,
+              position_x: node.position.x,
+              position_y: node.position.y,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "user_id,snippet_id",
+            },
+          )
+
+          if (error) {
+            console.error("Error saving node position:", error)
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error saving node positions:", error)
+    }
+  }
+
+  // Save canvas settings (zoom and position)
+  const saveCanvasSettings = async (viewport: Viewport) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+
+      if (userError || !user) return
+
+      // Update or insert canvas settings
+      const { error } = await supabase.from("canvas_settings").upsert(
+        {
+          user_id: user.id,
+          zoom: viewport.zoom,
+          position_x: viewport.x,
+          position_y: viewport.y,
+          updated_at: new Date().toISOString(),
+          // Keep existing values for public_access_id and is_public
+          public_access_id: publicAccessId,
+          is_public: isPublicCanvas,
+        },
+        {
+          onConflict: "user_id",
+        },
+      )
+
+      if (error) {
+        console.error("Error saving canvas settings:", error)
+      }
+    } catch (error) {
+      console.error("Error saving canvas settings:", error)
+    }
+  }
 
   const onEdgesChange = useCallback((changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)), [])
 
   const onConnect = useCallback((connection: any) => setEdges((eds) => addEdge(connection, eds)), [])
 
-  const selectedNode:any = nodes.find((node) => node.id === selectedNodeId)
+  const selectedNode: any = nodes.find((node) => node.id === selectedNodeId)
 
   const handleNodeClick = (_: any, node: any) => {
     setSelectedNodeId(node.id)
@@ -257,6 +441,79 @@ export default function CanvasView() {
     router.push("/dashboard/new")
   }
 
+  const handleTogglePublicCanvas = async (isPublic: boolean) => {
+    setSavingCanvas(true)
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+
+      if (userError || !user) {
+        router.push("/login")
+        return
+      }
+
+      // Generate a public access ID if making public and none exists
+      let accessId = publicAccessId
+      if (isPublic && !accessId) {
+        accessId = nanoid(10)
+        setPublicAccessId(accessId)
+      }
+
+      // Update canvas settings
+      const { error } = await supabase.from("canvas_settings").upsert(
+        {
+          user_id: user.id,
+          is_public: isPublic,
+          public_access_id: accessId,
+          updated_at: new Date().toISOString(),
+          // Keep existing viewport settings
+          zoom: reactFlowInstance ? reactFlowInstance.getViewport().zoom : 1,
+          position_x: reactFlowInstance ? reactFlowInstance.getViewport().x : 0,
+          position_y: reactFlowInstance ? reactFlowInstance.getViewport().y : 0,
+        },
+        {
+          onConflict: "user_id",
+        },
+      )
+
+      if (error) throw error
+
+      setIsPublicCanvas(isPublic)
+
+      // Update share URL
+      if (isPublic && accessId) {
+        const baseUrl = window.location.origin
+        setShareUrl(`${baseUrl}/canvas/${accessId}`)
+      } else {
+        setShareUrl("")
+      }
+
+      toast({
+        title: "Success",
+        description: isPublic ? "Canvas is now public" : "Canvas is now private",
+      })
+    } catch (error) {
+      console.error("Error updating canvas visibility:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update canvas visibility",
+        variant: "destructive",
+      })
+    } finally {
+      setSavingCanvas(false)
+    }
+  }
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(shareUrl)
+    toast({
+      title: "Link copied",
+      description: "Share link copied to clipboard",
+    })
+  }
+
   const styledNodes = nodes.map((node) => ({
     ...node,
     style: {
@@ -273,9 +530,63 @@ export default function CanvasView() {
         <div className="w-80 border-r bg-white p-4 overflow-y-auto">
           <div className="mb-4 flex justify-between items-center">
             <h2 className="text-lg font-semibold">Snippet Editor</h2>
-            <Button onClick={handleAddNewSnippet} size="sm" className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-1" /> New
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={handleAddNewSnippet} size="sm" className="bg-purple-600 hover:bg-purple-700">
+                <Plus className="h-4 w-4 mr-1" /> New
+              </Button>
+
+              <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Share2 className="h-4 w-4 mr-1" /> Share
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Share Canvas</DialogTitle>
+                    <DialogDescription>
+                      Make your canvas public to share it with others. Only public snippets will be visible to others.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="flex items-center space-x-2 py-4">
+                    <Switch
+                      id="public-canvas"
+                      checked={isPublicCanvas}
+                      onCheckedChange={handleTogglePublicCanvas}
+                      disabled={savingCanvas}
+                    />
+                    <Label htmlFor="public-canvas">Make canvas public</Label>
+                  </div>
+
+                  {isPublicCanvas && (
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Input value={shareUrl} readOnly className="flex-1" />
+                        <Button onClick={copyShareLink} size="sm">
+                          Copy
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        <Globe className="h-4 w-4 inline mr-1" />
+                        Only public snippets will be visible to others
+                      </p>
+                    </div>
+                  )}
+
+                  {!isPublicCanvas && (
+                    <div className="flex items-center space-x-2 text-muted-foreground">
+                      <Lock className="h-4 w-4" />
+                      <span>Your canvas is currently private</span>
+                    </div>
+                  )}
+
+                  <DialogFooter>
+                    <Button onClick={() => setIsShareDialogOpen(false)}>Close</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
           {selectedNode ? (
@@ -408,6 +719,7 @@ export default function CanvasView() {
               onConnect={onConnect}
               onNodeClick={handleNodeClick}
               nodeTypes={nodeTypes}
+              onMoveEnd={onMoveEnd}
               fitView
               style={rfStyle}
             >
