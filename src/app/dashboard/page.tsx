@@ -37,6 +37,15 @@ export default async function Dashboard() {
   // Get user's subscription
   const { data: subscription } = await supabase.from("subscriptions").select("*").eq("user_id", user.id).single()
 
+  // Get canvas settings to check if user has a public canvas
+  const { data: canvasSettings } = await supabase
+    .from("canvas_settings")
+    .select("public_access_id, is_public")
+    .eq("user_id", user.id)
+    .single()
+
+  const hasPublicCanvas = canvasSettings?.is_public && canvasSettings?.public_access_id
+
   return (
     <DashboardLayout>
       <div className="p-6">
@@ -55,6 +64,27 @@ export default async function Dashboard() {
             </Link>
           </div>
         </div>
+
+        {hasPublicCanvas && (
+          <div className="mb-6 bg-white p-4 rounded-lg border border-green-200 bg-green-50">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <div className="bg-green-100 p-2 rounded-full mr-3">
+                  <Layers className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Your canvas is public</h3>
+                  <p className="text-sm text-gray-600">Share your canvas with others</p>
+                </div>
+              </div>
+              <Link href={`/canvas/${canvasSettings.public_access_id}`} target="_blank">
+                <Button variant="outline" size="sm">
+                  <ExternalLink className="h-4 w-4 mr-2" /> View Public Canvas
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {subscription && (
           <div className="mb-6 bg-white p-4 rounded-lg border">
