@@ -1,13 +1,12 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import Link from "next/link"
-import { Code, Eye, ExternalLink } from "lucide-react"
+import { Code, Eye, ExternalLink, Layers, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import CodePreview from "@/components/CodePreview"
 import FavoriteButton from "@/components/favorite-button"
 import type { Database } from "@/lib/database.types"
-import HeaderComponent from "@/components/HeaderComponent"
 
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
 
@@ -32,14 +31,46 @@ export default async function ExplorePage() {
     .order("created_at", { ascending: false })
     .limit(6)
 
-  if (popularError || recentError) {
-    console.error("Error fetching snippets:", popularError || recentError)
+  // Get public canvases
+  const { data: publicCanvases, error: canvasError } = await supabase
+    .from("canvas_settings")
+    .select(`
+      id,
+      user_id,
+      public_access_id,
+      updated_at,
+      profiles:user_id (
+        full_name,
+        email
+      )
+    `)
+    .eq("is_public", true)
+    .order("updated_at", { ascending: false })
+    .limit(6)
+
+  if (popularError || recentError || canvasError) {
+    console.error("Error fetching data:", popularError || recentError || canvasError)
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <HeaderComponent />
+      <header className="bg-white border-b">
+        <div className="container mx-auto py-4 px-4 md:px-6 flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-2">
+            <Code className="h-6 w-6 text-purple-600" />
+            <span className="font-bold text-xl">SnippetVault</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/login">
+              <Button variant="ghost">Login</Button>
+            </Link>
+            <Link href="/signup">
+              <Button className="bg-purple-600 hover:bg-purple-700">Sign Up</Button>
+            </Link>
+          </div>
+        </div>
+      </header>
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-16">
@@ -54,9 +85,56 @@ export default async function ExplorePage() {
         </div>
       </div>
 
-      {/* Popular Snippets */}
+      {/* Public Canvases */}
       <div className="container mx-auto py-12 px-4 md:px-6">
-        <h2 className="text-2xl font-bold mb-6">Popular Snippets</h2>
+        <h2 className="text-2xl font-bold mb-6">Public Canvases</h2>
+        {publicCanvases && publicCanvases.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {publicCanvases.map((canvas) => {
+              const profile = canvas.profiles as any
+              const authorName = profile?.full_name || profile?.email?.split("@")[0] || "Anonymous"
+
+              return (
+                <Card key={canvas.id} className="flex flex-col h-full">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">Canvas by {authorName}</CardTitle>
+                      <Layers className="h-5 w-5 text-purple-500" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="py-2 flex-grow">
+                    <div className="bg-gradient-to-br from-purple-50 to-white rounded-lg border border-purple-100 h-32 flex items-center justify-center">
+                      <div className="text-center">
+                        <Layers className="h-8 w-8 text-purple-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">Interactive Code Canvas</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center text-sm text-gray-500">
+                      <User className="h-4 w-4 mr-1" />
+                      <span>By {authorName}</span>
+                      <span className="mx-2">•</span>
+                      <span>Updated {new Date(canvas.updated_at).toLocaleDateString()}</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pt-2">
+                    <Link href={`/canvas/${canvas.public_access_id}`} className="w-full">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <ExternalLink className="h-4 w-4 mr-2" /> View Canvas
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
+            <p className="text-gray-500">No public canvases found yet. Be the first to share!</p>
+          </div>
+        )}
+
+        {/* Popular Snippets */}
+        <h2 className="text-2xl font-bold mt-12 mb-6">Popular Snippets</h2>
         {popularSnippets && popularSnippets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {popularSnippets.map((snippet) => (
