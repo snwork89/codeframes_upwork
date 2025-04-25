@@ -6,4 +6,4 @@ import { ReactFlowProvider } from "@xyflow/react"
 
 export default function CanvasLayout({ children }: { children: React.ReactNode }) {
   return <ReactFlowProvider>{children}</ReactFlowProvider>
-}   
+}

@@ -7,12 +7,13 @@ import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, User } from "lucide-react"
 import HeaderComponent from "@/components/HeaderComponent"
-import CodePreview from "@/components/CodePreview";
+import CodePreview from "@/components/CodePreview"
 import {
   ReactFlow,
   Background,
   Controls,
   MiniMap,
+  useReactFlow,
   type Node,
   type Edge,
   type NodeTypes,
@@ -36,7 +37,7 @@ const TextUpdaterNode = ({ data }: NodeProps) => {
   )
 }
 
-export default function PublicCanvasView() {
+function PublicCanvasContent() {
   const [nodes, setNodes] = useState<Node[]>([])
   const [edges, setEdges] = useState<Edge[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,6 +45,7 @@ export default function PublicCanvasView() {
   const [ownerName, setOwnerName] = useState<string | null>(null)
   const params = useParams()
   const canvasId = params.id as string
+  const reactFlowInstance = useReactFlow()
 
   const supabase = createClientComponentClient<Database>()
 
@@ -59,19 +61,29 @@ export default function PublicCanvasView() {
           return
         }
 
+        console.log("Loading canvas with ID:", canvasId)
+
         // Get canvas settings by public access ID
         const { data: canvasSettings, error: settingsError } = await supabase
           .from("canvas_settings")
-          .select("*, profiles:user_id(full_name, email)")
+          .select("*, profiles:user_id(*)")
           .eq("public_access_id", canvasId)
           .eq("is_public", true)
           .single()
 
-        if (settingsError || !canvasSettings) {
+        if (settingsError) {
           console.error("Canvas not found or not public:", settingsError)
           setNotFound(true)
           return
         }
+
+        if (!canvasSettings) {
+          console.error("Canvas settings not found")
+          setNotFound(true)
+          return
+        }
+
+        console.log("Canvas settings found:", canvasSettings)
 
         // Set owner name
         const profile = canvasSettings.profiles as any
@@ -88,6 +100,8 @@ export default function PublicCanvasView() {
           console.error("Error fetching snippets:", snippetsError)
           return
         }
+
+        console.log("Public snippets found:", snippets?.length || 0)
 
         // Get saved positions
         const { data: positions, error: positionsError } = await supabase
@@ -107,7 +121,7 @@ export default function PublicCanvasView() {
           })
         }
 
-        if (snippets) {
+        if (snippets && snippets.length > 0) {
           // Convert snippets to nodes
           const snippetNodes: Node[] = snippets.map((snippet, index) => {
             // Use saved position if available, otherwise use default grid layout
@@ -133,19 +147,20 @@ export default function PublicCanvasView() {
           })
 
           setNodes(snippetNodes)
+        } else {
+          console.log("No public snippets found for this canvas")
         }
 
-        // Set viewport if we have saved settings
+        // Set viewport after nodes are loaded
         setTimeout(() => {
-          const flowInstance = document.querySelector(".react-flow")
-          if (flowInstance && typeof (flowInstance as any).setViewport === "function") {
-            ;(flowInstance as any).setViewport({
-              x: canvasSettings.position_x,
-              y: canvasSettings.position_y,
-              zoom: canvasSettings.zoom,
+          if (canvasSettings && reactFlowInstance) {
+            reactFlowInstance.setViewport({
+              x: canvasSettings.position_x || 0,
+              y: canvasSettings.position_y || 0,
+              zoom: canvasSettings.zoom || 1,
             })
           }
-        }, 100)
+        }, 200)
       } catch (error) {
         console.error("Error loading public canvas:", error)
         setNotFound(true)
@@ -155,7 +170,7 @@ export default function PublicCanvasView() {
     }
 
     loadPublicCanvas()
-  }, [canvasId, supabase])
+  }, [canvasId, supabase, reactFlowInstance])
 
   if (notFound) {
     return (
@@ -230,3 +245,13 @@ export default function PublicCanvasView() {
     </div>
   )
 }
+
+export default function PublicCanvasView() {
+  return (
+    <ReactFlowProvider>
+      <PublicCanvasContent />
+    </ReactFlowProvider>
+  )
+}
+
+import { ReactFlowProvider } from "@xyflow/react"

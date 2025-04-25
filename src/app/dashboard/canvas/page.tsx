@@ -74,11 +74,11 @@ export default function CanvasView() {
   const [publicAccessId, setPublicAccessId] = useState<string | null>(null)
   const [shareUrl, setShareUrl] = useState("")
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
-  const reactFlowInstance = useReactFlow();
-  const { setViewport, getViewport, } = useReactFlow()
+
+  const { setViewport } = useReactFlow()
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const initialLoadRef = useRef(true)
-
+  const reactFlowInstance = useReactFlow()
 
   const router = useRouter()
   const supabase = createClientComponentClient<Database>()
@@ -498,9 +498,9 @@ export default function CanvasView() {
           public_access_id: accessId,
           updated_at: new Date().toISOString(),
           // Keep existing viewport settings
-          zoom: reactFlowInstance ? getViewport().zoom : 1,
-          position_x: reactFlowInstance ? getViewport().x : 0,
-          position_y: reactFlowInstance ? getViewport().y : 0,
+          zoom: reactFlowInstance ? reactFlowInstance.getViewport().zoom : 1,
+          position_x: reactFlowInstance ? reactFlowInstance.getViewport().x : 0,
+          position_y: reactFlowInstance ? reactFlowInstance.getViewport().y : 0,
         },
         {
           onConflict: "user_id",
