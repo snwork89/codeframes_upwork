@@ -5,7 +5,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, User } from "lucide-react"
+import { ArrowLeft, User } from 'lucide-react'
 import HeaderComponent from "@/components/HeaderComponent"
 import CodePreview from "@/components/CodePreview"
 import {
@@ -18,6 +18,7 @@ import {
   type Edge,
   type NodeTypes,
   type NodeProps,
+  ReactFlowProvider,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import type { Database } from "@/lib/database.types"
@@ -89,19 +90,19 @@ function PublicCanvasContent() {
         const profile = canvasSettings.profiles as any
         setOwnerName(profile?.full_name || profile?.email?.split("@")[0] || "Anonymous")
 
-        // Get public snippets from this user
+        // Get ALL snippets from this user (not just public ones)
+        // This allows the canvas owner to share their entire canvas layout
         const { data: snippets, error: snippetsError } = await supabase
           .from("snippets")
           .select("*")
           .eq("user_id", canvasSettings.user_id)
-          .eq("is_public", true)
 
         if (snippetsError) {
           console.error("Error fetching snippets:", snippetsError)
           return
         }
 
-        console.log("Public snippets found:", snippets?.length || 0)
+        console.log("Snippets found:", snippets?.length || 0)
 
         // Get saved positions
         const { data: positions, error: positionsError } = await supabase
@@ -140,6 +141,7 @@ function PublicCanvasContent() {
                 js: snippet.js_code || "",
                 title: snippet.title,
                 description: snippet.description,
+                is_public: snippet.is_public,
               },
               draggable: false, // Make nodes non-draggable in public view
               selectable: false, // Make nodes non-selectable in public view
@@ -148,7 +150,7 @@ function PublicCanvasContent() {
 
           setNodes(snippetNodes)
         } else {
-          console.log("No public snippets found for this canvas")
+          console.log("No snippets found for this canvas")
         }
 
         // Set viewport after nodes are loaded
@@ -195,6 +197,7 @@ function PublicCanvasContent() {
       border: "1px solid #e5e7eb",
       borderRadius: "0.375rem",
       background: "white",
+      opacity: node.data.is_public ? 1 : 0.5, // Make private snippets semi-transparent
     },
   }))
 
@@ -215,6 +218,12 @@ function PublicCanvasContent() {
               <span>Canvas by {ownerName}</span>
             </div>
           )}
+        </div>
+        
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+          <p className="text-sm text-yellow-800">
+            <span className="font-medium">Note:</span> Semi-transparent snippets are private and only visible to the canvas owner.
+          </p>
         </div>
       </div>
 
@@ -253,5 +262,3 @@ export default function PublicCanvasView() {
     </ReactFlowProvider>
   )
 }
-
-import { ReactFlowProvider } from "@xyflow/react"
