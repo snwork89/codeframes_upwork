@@ -5,9 +5,9 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, User } from 'lucide-react'
+import { ArrowLeft, User } from "lucide-react"
 import HeaderComponent from "@/components/HeaderComponent"
-import CodePreview from "@/components/CodePreview"
+import CodePreview from "@/components/CodePreview";
 import {
   ReactFlow,
   Background,
@@ -55,11 +55,8 @@ function PublicCanvasContent() {
   }
 
   useEffect(() => {
-    
     async function loadPublicCanvas() {
-      
       try {
-   
         if (!canvasId) {
           setNotFound(true)
           return
@@ -70,7 +67,7 @@ function PublicCanvasContent() {
         // Get canvas settings by public access ID
         const { data: canvasSettings, error: settingsError } = await supabase
           .from("canvas_settings")
-          .select("*, profiles:user_id(*)")
+          .select("public_access_id, is_public, zoom, position_x, position_y, user_id")
           .eq("public_access_id", canvasId)
           .eq("is_public", true)
           .single()
@@ -81,17 +78,26 @@ function PublicCanvasContent() {
           return
         }
 
-        if (!canvasSettings) {
-          console.error("Canvas settings not found")
-          setNotFound(true)
-          return
+        // Get user profile separately
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("full_name, email")
+          .eq("id", canvasSettings.user_id)
+          .single()
+
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError)
         }
+
+        // Set owner name
+        const authorName = userProfile?.full_name || userProfile?.email?.split("@")[0] || "Anonymous"
+        setOwnerName(authorName)
 
         console.log("Canvas settings found:", canvasSettings)
 
         // Set owner name
-        const profile = canvasSettings.profiles as any
-        setOwnerName(profile?.full_name || profile?.email?.split("@")[0] || "Anonymous")
+        // const profile = canvasSettings.profiles as any
+        // setOwnerName(profile?.full_name || profile?.email?.split("@")[0] || "Anonymous")
 
         // Get ALL snippets from this user (not just public ones)
         // This allows the canvas owner to share their entire canvas layout
@@ -99,8 +105,6 @@ function PublicCanvasContent() {
           .from("snippets")
           .select("*")
           .eq("user_id", canvasSettings.user_id)
-
-          console.log("snippetsss------",snippets);
 
         if (snippetsError) {
           console.error("Error fetching snippets:", snippetsError)
@@ -172,7 +176,6 @@ function PublicCanvasContent() {
         console.error("Error loading public canvas:", error)
         setNotFound(true)
       } finally {
-      
         setLoading(false)
       }
     }
@@ -225,10 +228,11 @@ function PublicCanvasContent() {
             </div>
           )}
         </div>
-        
+
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
           <p className="text-sm text-yellow-800">
-            <span className="font-medium">Note:</span> Semi-transparent snippets are private and only visible to the canvas owner.
+            <span className="font-medium">Note:</span> Semi-transparent snippets are private and only visible to the
+            canvas owner.
           </p>
         </div>
       </div>
