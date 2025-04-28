@@ -37,8 +37,8 @@ export default function SignUp() {
       if (error) {
         setError(error.message)
       } else {
-        // Show success message or redirect
-        router.push("/signup/confirmation")
+        // Explicitly navigate to confirmation page instead of relying on router.push
+        window.location.href = "/signup/confirmation"
       }
     } catch (err) {
       setError("An unexpected error occurred")

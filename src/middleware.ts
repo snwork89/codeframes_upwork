@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Public routes that don't require authentication
-    const publicRoutes = ["/", "/login", "/signup", "/explore", "/auth/callback"]
+    const publicRoutes = ["/", "/login", "/signup", "/signup/confirmation", "/explore", "/auth/callback"]
 
     // Check if the path starts with /snippet/ (public snippet view) or /canvas/ (public canvas view)
     const isPublicSnippetView = req.nextUrl.pathname.startsWith("/snippet/")
@@ -38,7 +38,7 @@ export async function middleware(req: NextRequest) {
   } catch (error) {
     // If there's an error verifying the session, redirect to login
     // But allow access to public routes
-    const publicRoutes = ["/", "/login", "/signup", "/explore", "/auth/callback"]
+    const publicRoutes = ["/", "/login", "/signup", "/signup/confirmation", "/explore", "/auth/callback"]
 
     // Check if the path starts with /snippet/ (public snippet view) or /canvas/ (public canvas view)
     const isPublicSnippetView = req.nextUrl.pathname.startsWith("/snippet/")
