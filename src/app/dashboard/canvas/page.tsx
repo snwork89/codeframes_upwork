@@ -82,7 +82,7 @@ export default function CanvasView() {
   const [shareUrl, setShareUrl] = useState("")
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
 
-  const { setViewport } = useReactFlow()
+  const { setViewport, getViewport } = useReactFlow()
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const initialLoadRef = useRef(true)
   const reactFlowInstance = useReactFlow()
@@ -111,12 +111,13 @@ export default function CanvasView() {
         // Get canvas settings
         const { data: canvasSettings, error: settingsError } = await supabase
           .from("canvas_settings")
-          .select("*")
+          .select("public_access_id, is_public, zoom, position_x, position_y")
           .eq("user_id", user.id)
           .single()
 
         if (settingsError && settingsError.code !== "PGRST116") {
           console.error("Error fetching canvas settings:", settingsError)
+          // If settings don't exist yet, we'll create them later when saving
         }
 
         if (canvasSettings) {
