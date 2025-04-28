@@ -55,8 +55,11 @@ function PublicCanvasContent() {
   }
 
   useEffect(() => {
+    
     async function loadPublicCanvas() {
+      
       try {
+   
         if (!canvasId) {
           setNotFound(true)
           return
@@ -96,6 +99,8 @@ function PublicCanvasContent() {
           .from("snippets")
           .select("*")
           .eq("user_id", canvasSettings.user_id)
+
+          console.log("snippetsss------",snippets);
 
         if (snippetsError) {
           console.error("Error fetching snippets:", snippetsError)
@@ -167,6 +172,7 @@ function PublicCanvasContent() {
         console.error("Error loading public canvas:", error)
         setNotFound(true)
       } finally {
+      
         setLoading(false)
       }
     }
