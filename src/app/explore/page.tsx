@@ -17,12 +17,28 @@ export default async function ExplorePage() {
   const supabase = createServerComponentClient<Database>({ cookies })
 
   // Get public canvases
-  const { data: publicCanvases, error: canvasError } = await supabase
+  const { data: publicCanvasesData, error: canvasError } = await supabase
     .from("canvas_settings")
-    .select("*, profiles:user_id(full_name, email)")
+    .select("id, public_access_id, updated_at, user_id, is_public")
     .eq("is_public", true)
     .order("updated_at", { ascending: false })
     .limit(6)
+
+  // Get user profiles for the canvas owners
+  let publicCanvases:any[] = []
+  if (publicCanvasesData && publicCanvasesData.length > 0) {
+    const userIds = publicCanvasesData.map((canvas) => canvas.user_id)
+    const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds)
+
+    // Map profiles to canvases
+    publicCanvases = publicCanvasesData.map((canvas) => {
+      const profile = profiles?.find((p) => p.id === canvas.user_id)
+      return {
+        ...canvas,
+        profiles: profile,
+      }
+    })
+  }
 
   // Get popular public snippets
   const { data: popularSnippets, error: popularError } = await supabase
