@@ -1,11 +1,12 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import Link from "next/link"
-import { Code, Eye, ExternalLink, Layers } from "lucide-react"
+import { Eye, ExternalLink, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import CodePreview from "@/components/CodePreview"
 import FavoriteButton from "@/components/favorite-button"
+import HeaderComponent from "@/components/HeaderComponent"
 import type { Database } from "@/lib/database.types"
 
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
@@ -45,23 +46,8 @@ export default async function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto py-4 px-4 md:px-6 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Code className="h-6 w-6 text-purple-600" />
-            <span className="font-bold text-xl">SnippetVault</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-purple-600 hover:bg-purple-700">Sign Up</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Use the HeaderComponent for consistent header behavior */}
+      <HeaderComponent />
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-16">
@@ -97,7 +83,7 @@ export default async function ExplorePage() {
                     <div className="bg-gray-50 h-32 rounded-md border flex items-center justify-center">
                       <div className="text-center p-4">
                         <p className="text-sm text-gray-500">
-                          View this user's public snippets arranged on an interactive canvas
+                          View this user's snippets arranged on an interactive canvas
                         </p>
                       </div>
                     </div>
@@ -165,7 +151,6 @@ function SnippetCard({ snippet }: { snippet: any }) {
           <CardTitle className="text-lg">{snippet.title}</CardTitle>
           <FavoriteButton snippetId={snippet.id} size="icon" />
         </div>
-        <div className="flex items-center text-sm text-gray-500"></div>
         <div className="flex items-center text-sm text-gray-500">
           <span>By {authorName}</span>
           <span className="mx-2">•</span>
