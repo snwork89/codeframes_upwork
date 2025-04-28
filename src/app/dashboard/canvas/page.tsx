@@ -5,7 +5,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { useRouter } from "next/navigation"
 import DashboardLayout from "@/components/dashboard-layout"
 import CodePreview from "@/components/CodePreview"
-import { Pencil, Trash2, Plus, Save, X, Share2, Lock, Globe } from "lucide-react"
+import { Pencil, Trash2, Plus, Save, X, Share2, Lock, Globe, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
 import { nanoid } from "nanoid"
@@ -48,11 +48,18 @@ const rfStyle = {
 }
 
 const TextUpdaterNode = ({ data, selected }: NodeProps) => {
-  const { html, css, js, title }: any = data
+  const { html, css, js, title, is_public }: any = data
 
   return (
     <div className="p-1">
-      <div className="font-medium text-sm mb-1 px-1 truncate">{title}</div>
+      <div className="font-medium text-sm mb-1 px-1 truncate flex justify-between items-center">
+        <span>{title}</span>
+        {is_public ? (
+          <Eye className="h-3 w-3 text-green-600" />
+        ) : (
+          <EyeOff className="h-3 w-3 text-gray-400" />
+        )}
+      </div>
       <CodePreview html={html} css={css} js={js} width="300px" height="200px" />
     </div>
   )
@@ -65,7 +72,7 @@ export default function CanvasView() {
   const [edges, setEdges] = useState<Edge[]>([])
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState({ html: "", css: "", js: "", title: "" })
+  const [editData, setEditData] = useState({ html: "", css: "", js: "", title: "", is_public: false })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -349,6 +356,7 @@ export default function CanvasView() {
       css: node.data.css || "",
       js: node.data.js || "",
       title: node.data.title || "",
+      is_public: node.data.is_public || false,
     })
   }
 
@@ -385,6 +393,7 @@ export default function CanvasView() {
                   css: editData.css,
                   js: editData.js,
                   title: editData.title,
+                  is_public: editData.is_public,
                 },
               }
             : node,
@@ -399,6 +408,7 @@ export default function CanvasView() {
           html_code: editData.html,
           css_code: editData.css,
           js_code: editData.js,
+          is_public: editData.is_public,
           updated_at: new Date().toISOString(),
         })
         .eq("id", selectedNode.id)
@@ -430,6 +440,7 @@ export default function CanvasView() {
         css: selectedNode.data.css || "",
         js: selectedNode.data.js || "",
         title: selectedNode.data.title || "",
+        is_public: selectedNode.data.is_public || false,
       })
     }
     setIsEditing(false)
@@ -549,6 +560,7 @@ export default function CanvasView() {
       border: node.id === selectedNodeId ? "2px solid #7c3aed" : "1px solid #e5e7eb",
       borderRadius: "0.375rem",
       background: "white",
+      opacity: isPublicCanvas && !node.data.is_public ? 0.7 : 1, // Make private snippets semi-transparent when canvas is public
     },
   }))
 
@@ -574,7 +586,8 @@ export default function CanvasView() {
                   <DialogHeader>
                     <DialogTitle>Share Canvas</DialogTitle>
                     <DialogDescription>
-                      Make your canvas public to share it with others. Only public snippets will be visible to others.
+                      Make your canvas public to share it with others. All snippets will be visible in the canvas
+                      layout, but only public snippets will be fully visible to others.
                     </DialogDescription>
                   </DialogHeader>
 
@@ -596,10 +609,12 @@ export default function CanvasView() {
                           Copy
                         </Button>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        <Globe className="h-4 w-4 inline mr-1" />
-                        Only public snippets will be visible to others
-                      </p>
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                        <p className="text-sm text-yellow-800">
+                          <span className="font-medium">Note:</span> Private snippets will appear semi-transparent to
+                          visitors. Make snippets public to allow others to see their content.
+                        </p>
+                      </div>
                     </div>
                   )}
 
@@ -667,6 +682,14 @@ export default function CanvasView() {
                       className="w-full px-3 py-2 border rounded-md"
                     />
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="public-snippet"
+                      checked={editData.is_public}
+                      onCheckedChange={(checked) => setEditData({ ...editData, is_public: checked })}
+                    />
+                    <Label htmlFor="public-snippet">Make this snippet public</Label>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">HTML</label>
                     <textarea
@@ -697,6 +720,18 @@ export default function CanvasView() {
                 </div>
               ) : (
                 <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Visibility:</span>
+                    {selectedNode.data.is_public ? (
+                      <span className="flex items-center text-green-600 text-sm">
+                        <Eye className="h-4 w-4 mr-1" /> Public
+                      </span>
+                    ) : (
+                      <span className="flex items-center text-gray-500 text-sm">
+                        <EyeOff className="h-4 w-4 mr-1" /> Private
+                      </span>
+                    )}
+                  </div>
                   <div>
                     <h4 className="text-sm font-medium mb-1">Preview</h4>
                     <CodePreview
@@ -735,6 +770,18 @@ export default function CanvasView() {
 
         {/* Canvas */}
         <div className="flex-1 relative">
+          {isPublicCanvas && (
+            <div className="absolute top-4 right-4 z-10 bg-yellow-50 border border-yellow-200 rounded-md p-3 shadow-md max-w-xs">
+              <p className="text-sm text-yellow-800 flex items-center">
+                <Globe className="h-4 w-4 mr-2 text-yellow-600" />
+                <span>
+                  <span className="font-medium">Canvas is public.</span> Semi-transparent snippets are private and only
+                  visible to you.
+                </span>
+              </p>
+            </div>
+          )}
+
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
