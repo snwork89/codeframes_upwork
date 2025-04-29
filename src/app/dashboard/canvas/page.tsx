@@ -327,7 +327,6 @@ export default function CanvasView() {
           position_x: viewport.x,
           position_y: viewport.y,
           updated_at: new Date().toISOString(),
-          // Keep existing values for public_access_id and is_public
           public_access_id: publicAccessId,
           is_public: isPublicCanvas,
         },
