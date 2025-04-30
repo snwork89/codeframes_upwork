@@ -32,8 +32,16 @@ export async function POST(request: Request) {
     }
 
     if (!plan.stripePriceId) {
-      return NextResponse.json({ message: "Stripe price ID not configured" }, { status: 500 })
+      return NextResponse.json(
+        {
+          message: `Stripe price ID not configured for ${planType} plan. Please check your environment variables.`,
+        },
+        { status: 500 },
+      )
     }
+
+    // Log the price ID being used (for debugging)
+    console.log(`Creating checkout session with price ID: ${plan.stripePriceId} for plan: ${planType}`)
 
     // Get or create customer
     const { data: userData, error: userError2 } = await supabase
@@ -74,7 +82,7 @@ export async function POST(request: Request) {
       await supabase.from("subscriptions").update({ stripe_customer_id: customerId }).eq("user_id", user.id)
     }
 
-    // Create a checkout session
+    // Create a checkout session for one-time payment
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -83,18 +91,25 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      mode: "subscription",
+      mode: "payment", // Changed from "subscription" to "payment" for one-time purchases
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/settings?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/settings?canceled=true`,
       metadata: {
         userId: user.id,
         planType: planType,
+        snippetLimit: plan.snippetLimit,
       },
     })
 
     return NextResponse.json({ url: checkoutSession.url })
-  } catch (error) {
-    console.error("Error creating checkout session:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+  } catch (error: any) {
+    console.error("Error creating checkout session:", error.message)
+    return NextResponse.json(
+      {
+        message: "Error creating checkout session",
+        error: error.message,
+      },
+      { status: 500 },
+    )
   }
 }
