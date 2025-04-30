@@ -39,131 +39,66 @@ export async function POST(request: Request) {
       // Extract metadata
       const userId = session.metadata?.userId
       const planType = session.metadata?.planType
+      const snippetLimit = session.metadata?.snippetLimit ? Number.parseInt(session.metadata.snippetLimit) : 0
 
       if (!userId || !planType) {
         console.error("Missing metadata in checkout session")
         return NextResponse.json({ message: "Missing metadata" }, { status: 400 })
       }
 
-      // Get subscription details from Stripe
-      if (session.subscription) {
-        const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription.id
-
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-
-        // Determine snippet limit based on plan type
-        let snippetLimit = 10 // Default to free plan
-        if (planType === "basic") {
-          snippetLimit = PLANS.BASIC.snippetLimit
-        } else if (planType === "premium") {
-          snippetLimit = PLANS.PREMIUM.snippetLimit
-        }
-
-        // Update subscription in database
-        await supabaseAdmin
-          .from("subscriptions")
-          .update({
-            stripe_subscription_id: subscription.id,
-            stripe_price_id: subscription.items.data[0].price.id,
-            plan_type: planType,
-            status: subscription.status,
-            snippet_limit: snippetLimit,
-          })
-          .eq("user_id", userId)
-      }
-
-      break
-    }
-
-    case "invoice.payment_succeeded": {
-      const invoice = event.data.object as Stripe.Invoice & { subscription: string }
-      const subscriptionId = invoice.subscription
-      if (!subscriptionId) {
-        break
-      }
-      // Get subscription details from Stripe
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId as string)
-
-      // Find the user by subscription ID
-      const { data: subscriptionData, error } = await supabaseAdmin
+      // For one-time payments, we need to update the user's snippet limit
+      // First, get the current subscription data
+      const { data: subscriptionData, error: subscriptionError } = await supabaseAdmin
         .from("subscriptions")
-        .select("user_id, plan_type")
-        .eq("stripe_subscription_id", subscriptionId)
+        .select("snippet_limit, plan_type")
+        .eq("user_id", userId)
         .single()
 
-      if (error || !subscriptionData) {
-        console.error("Error finding subscription:", error)
-        break
+      if (subscriptionError) {
+        console.error("Error fetching subscription data:", subscriptionError)
+        return NextResponse.json({ message: "Error fetching subscription data" }, { status: 500 })
+      }
+
+      // Determine the new snippet limit
+      let newSnippetLimit = snippetLimit
+      const newPlanType = planType
+
+      // If the user is upgrading from free to a paid plan, use the new limit
+      // If they're already on a paid plan, add the new limit to their existing limit
+      if (subscriptionData.plan_type !== "free" && subscriptionData.snippet_limit > PLANS.FREE.snippetLimit) {
+        newSnippetLimit =
+          subscriptionData.snippet_limit +
+          snippetLimit -
+          PLANS[subscriptionData.plan_type.toUpperCase() as keyof typeof PLANS].snippetLimit
       }
 
       // Update subscription in database
       await supabaseAdmin
         .from("subscriptions")
         .update({
-          status: subscription.status,
-        })
-        .eq("stripe_subscription_id", subscriptionId)
-
-      break
-    }
-
-    case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription
-
-      // Find the user by subscription ID
-      const { data: subscriptionData, error } = await supabaseAdmin
-        .from("subscriptions")
-        .select("user_id, plan_type")
-        .eq("stripe_subscription_id", subscription.id)
-        .single()
-
-      if (error || !subscriptionData) {
-        console.error("Error finding subscription:", error)
-        break
-      }
-
-      // Check if plan has changed
-      const newPriceId = subscription.items.data[0].price.id
-      let newPlanType = subscriptionData.plan_type
-      let snippetLimit = 10 // Default to free plan
-
-      if (newPriceId === PLANS.BASIC.stripePriceId) {
-        newPlanType = "basic"
-        snippetLimit = PLANS.BASIC.snippetLimit
-      } else if (newPriceId === PLANS.PREMIUM.stripePriceId) {
-        newPlanType = "premium"
-        snippetLimit = PLANS.PREMIUM.snippetLimit
-      }
-
-      // Update subscription in database
-      await supabaseAdmin
-        .from("subscriptions")
-        .update({
-          stripe_price_id: newPriceId,
           plan_type: newPlanType,
-          status: subscription.status,
-          snippet_limit: snippetLimit,
+          status: "active",
+          snippet_limit: newSnippetLimit,
+          // For one-time payments, we don't need to store subscription_id
+          stripe_price_id: session.amount_total ? session.amount_total.toString() : null,
         })
-        .eq("stripe_subscription_id", subscription.id)
+        .eq("user_id", userId)
 
       break
     }
 
-    case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription
+    // We don't need to handle subscription events for one-time payments
+    // But we'll keep some basic payment handling
 
-      // Update subscription in database to free plan
-      await supabaseAdmin
-        .from("subscriptions")
-        .update({
-          stripe_subscription_id: null,
-          stripe_price_id: null,
-          plan_type: "free",
-          status: "canceled",
-          snippet_limit: PLANS.FREE.snippetLimit,
-        })
-        .eq("stripe_subscription_id", subscription.id)
+    case "payment_intent.succeeded": {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      console.log(`Payment succeeded: ${paymentIntent.id}`)
+      break
+    }
 
+    case "payment_intent.payment_failed": {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      console.log(`Payment failed: ${paymentIntent.id}`)
       break
     }
 
