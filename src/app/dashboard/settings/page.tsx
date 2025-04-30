@@ -182,7 +182,7 @@ export default function Settings() {
 
   const featureItemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
   };
 
   return (
@@ -386,56 +386,64 @@ export default function Settings() {
         {/* Current Subscription Section */}
         {subscription && (
           <motion.div
-          className="mt-8"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Subscription</CardTitle>
-              <CardDescription>Your subscription details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-sm text-gray-600">Plan</span>
-                    <p className="font-medium capitalize">{subscription.plan_type}</p>
+            className="mt-8"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Current Subscription</CardTitle>
+                <CardDescription>Your subscription details</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm text-gray-600">Plan</span>
+                      <p className="font-medium capitalize">
+                        {subscription.plan_type}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-600">
+                        Snippet Limit
+                      </span>
+                      <p className="font-medium">
+                        {snippetCount} / {subscription.snippet_limit} snippets
+                        used
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Snippet Limit</span>
-                    <p className="font-medium">
-                      {snippetCount} / {subscription.snippet_limit} snippets used
-                    </p>
+
+                  {/* Animated Progress Bar */}
+                  <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-2 border border-purple-500">
+                    <motion.div
+                      className="h-full bg-purple-600"
+                      initial={{ width: 0 }}
+                      animate={{
+                        width: `${Math.min(
+                          (snippetCount / subscription.snippet_limit) * 100,
+                          100
+                        )}%`,
+                      }}
+                      transition={{ duration: 0.8, ease: "easeInOut" }}
+                    />
                   </div>
                 </div>
-        
-                {/* Animated Progress Bar */}
-                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-2 border border-purple-500">
-                  <motion.div
-                    className="h-full bg-purple-600"
-                    initial={{ width: 0 }}
-                    animate={{
-                      width: `${Math.min(
-                        (snippetCount / subscription.snippet_limit) * 100,
-                        100
-                      )}%`,
-                    }}
-                    transition={{ duration: 0.8, ease: "easeInOut" }}
-                  />
-                </div>
-              </div>
-            </CardContent>
-            {subscription.plan_type !== "free" && (
-              <CardFooter>
-                <Button variant="outline" className="text-red-600 hover:text-red-700">
-                  Cancel Subscription
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-        </motion.div>
+              </CardContent>
+              {subscription.plan_type !== "free" && (
+                <CardFooter>
+                  <Button
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Cancel Subscription
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+          </motion.div>
         )}
       </div>
     </DashboardLayout>
