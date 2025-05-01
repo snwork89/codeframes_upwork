@@ -47,67 +47,6 @@ export interface Database {
           views?: number
         }
       }
-      subscriptions: {
-        Row: {
-          id: string
-          created_at: string
-          user_id: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          stripe_price_id: string | null
-          plan_type: string
-          status: string
-          snippet_limit: number
-        }
-        Insert: {
-          id?: string
-          created_at?: string
-          user_id: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          stripe_price_id?: string | null
-          plan_type: string
-          status: string
-          snippet_limit: number
-        }
-        Update: {
-          id?: string
-          created_at?: string
-          user_id?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          stripe_price_id?: string | null
-          plan_type?: string
-          status?: string
-          snippet_limit?: number
-        }
-      }
-      profiles: {
-        Row: {
-          id: string
-          created_at: string
-          updated_at: string
-          email: string
-          full_name: string | null
-          avatar_url: string | null
-        }
-        Insert: {
-          id: string
-          created_at?: string
-          updated_at?: string
-          email: string
-          full_name?: string | null
-          avatar_url?: string | null
-        }
-        Update: {
-          id?: string
-          created_at?: string
-          updated_at?: string
-          email?: string
-          full_name?: string | null
-          avatar_url?: string | null
-        }
-      }
       canvas_positions: {
         Row: {
           id: string
@@ -190,6 +129,99 @@ export interface Database {
           created_at?: string
           user_id?: string
           snippet_id?: string
+        }
+      }
+      subscriptions: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          stripe_price_id: string | null
+          plan_type: string
+          status: string
+          snippet_limit: number
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          stripe_price_id?: string | null
+          plan_type: string
+          status: string
+          snippet_limit: number
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          stripe_price_id?: string | null
+          plan_type?: string
+          status?: string
+          snippet_limit?: number
+        }
+      }
+      purchases: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          plan_type: string
+          amount: number
+          snippet_limit_added: number
+          payment_intent_id: string | null
+          status: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          plan_type: string
+          amount: number
+          snippet_limit_added: number
+          payment_intent_id?: string | null
+          status: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          plan_type?: string
+          amount?: number
+          snippet_limit_added?: number
+          payment_intent_id?: string | null
+          status?: string
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          email: string
+          full_name: string | null
+          avatar_url: string | null
+        }
+        Insert: {
+          id: string
+          created_at?: string
+          updated_at?: string
+          email: string
+          full_name?: string | null
+          avatar_url?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          email?: string
+          full_name?: string | null
+          avatar_url?: string | null
         }
       }
     }
