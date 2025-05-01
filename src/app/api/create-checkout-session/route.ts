@@ -1,115 +1,77 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 import stripe from "@/lib/stripe"
 import { PLANS } from "@/lib/stripe"
+import type { Database } from "@/lib/database.types"
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+    const { planType, userId } = await request.json()
 
-    // Get authenticated user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
-
-    if (userError || !user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    if (!planType || !userId) {
+      return NextResponse.json({ message: "Missing required fields" }, { status: 400 })
     }
 
-    const { planType } = await request.json()
-
-    // Get the plan details
-    let plan
-    if (planType === "basic") {
-      plan = PLANS.BASIC
-    } else if (planType === "premium") {
-      plan = PLANS.PREMIUM
-    } else {
+    // Validate plan type
+    if (planType !== "basic" && planType !== "premium") {
       return NextResponse.json({ message: "Invalid plan type" }, { status: 400 })
     }
 
-    if (!plan.stripePriceId) {
-      return NextResponse.json(
-        {
-          message: `Stripe price ID not configured for ${planType} plan. Please check your environment variables.`,
-        },
-        { status: 500 },
-      )
+    // Get price ID based on plan type
+    const priceId = planType === "basic" ? PLANS.BASIC.stripePriceId : PLANS.PREMIUM.stripePriceId
+
+    if (!priceId) {
+      return NextResponse.json({ message: "Price ID not configured" }, { status: 500 })
     }
 
-    // Log the price ID being used (for debugging)
-    console.log(`Creating checkout session with price ID: ${plan.stripePriceId} for plan: ${planType}`)
+    // Get user email for the checkout session
+    const supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      },
+    )
 
-    // Get or create customer
-    const { data: userData, error: userError2 } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from("profiles")
       .select("email")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single()
 
-    if (userError2) {
-      return NextResponse.json({ message: "Error fetching user data" }, { status: 500 })
+    if (userError || !userData) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 })
     }
 
-    // Get existing subscription
-    const { data: subscriptionData, error: subscriptionError } = await supabase
-      .from("subscriptions")
-      .select("stripe_customer_id")
-      .eq("user_id", user.id)
-      .single()
+    // Get the snippet limit for the plan
+    const snippetLimit = planType === "basic" ? PLANS.BASIC.snippetLimit : PLANS.PREMIUM.snippetLimit
 
-    if (subscriptionError && subscriptionError.code !== "PGRST116") {
-      return NextResponse.json({ message: "Error fetching subscription data" }, { status: 500 })
-    }
-
-    let customerId = subscriptionData?.stripe_customer_id
-
-    // If no customer ID exists, create a new customer
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: userData.email,
-        metadata: {
-          userId: user.id,
-        },
-      })
-
-      customerId = customer.id
-
-      // Update the subscription record with the customer ID
-      await supabase.from("subscriptions").update({ stripe_customer_id: customerId }).eq("user_id", user.id)
-    }
-
-    // Create a checkout session for one-time payment
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: customerId,
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
       line_items: [
         {
-          price: plan.stripePriceId,
+          price: priceId,
           quantity: 1,
         },
       ],
-      mode: "payment", // Changed from "subscription" to "payment" for one-time purchases
+      mode: "payment", // Use "payment" for one-time payments
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/settings?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/settings?canceled=true`,
+      customer_email: userData.email,
       metadata: {
-        userId: user.id,
-        planType: planType,
-        snippetLimit: plan.snippetLimit,
+        userId,
+        planType,
+        snippetLimit: snippetLimit.toString(),
       },
     })
 
-    return NextResponse.json({ url: checkoutSession.url })
+    return NextResponse.json({ url: session.url })
   } catch (error: any) {
-    console.error("Error creating checkout session:", error.message)
-    return NextResponse.json(
-      {
-        message: "Error creating checkout session",
-        error: error.message,
-      },
-      { status: 500 },
-    )
+    console.error("Error creating checkout session:", error)
+    return NextResponse.json({ message: error.message }, { status: 500 })
   }
 }
