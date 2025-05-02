@@ -25,10 +25,10 @@ export async function POST(request: Request) {
   let event: Stripe.Event
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET || "");
+    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET || "")
   } catch (error: any) {
-    console.error(`Webhook signature verification failed: ${error.message}`);
-    return NextResponse.json({ message: "Webhook signature verification failed" }, { status: 400 });
+    console.error(`Webhook signature verification failed: ${error.message}`)
+    return NextResponse.json({ message: "Webhook signature verification failed" }, { status: 400 })
   }
 
   console.log(`Processing webhook event: ${event.type}`)
@@ -75,6 +75,18 @@ export async function POST(request: Request) {
           return NextResponse.json({ message: "Error fetching subscription data" }, { status: 500 })
         }
 
+        // Get user profile data for the invoice
+        const { data: profileData, error: profileError } = await supabaseAdmin
+          .from("profiles")
+          .select("email, full_name")
+          .eq("id", userId)
+          .single()
+
+        if (profileError) {
+          console.error("Error fetching profile data:", profileError)
+          // Continue anyway, as this is not critical
+        }
+
         // Calculate new snippet limit
         // If user is on free plan, set to the new plan's limit
         // If user already has a paid plan, add the new limit to their existing limit
@@ -90,18 +102,27 @@ export async function POST(request: Request) {
 
         console.log(`Updating snippet limit from ${subscriptionData.snippet_limit} to ${newSnippetLimit}`)
 
-        // Create a purchase record (optional, but recommended)
-        const { error: purchaseError } = await supabaseAdmin.from("purchases").insert({
+        // Create an invoice record
+        const { error: invoiceError } = await supabaseAdmin.from("invoices").insert({
           user_id: userId,
+          email: profileData?.email || null,
+          full_name: profileData?.full_name || null,
           plan_type: planType,
           amount: session.amount_total ? session.amount_total / 100 : 0, // Convert from cents
           snippet_limit_added: snippetLimitIncrease,
           payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
+          payment_method: session.payment_method_types ? session.payment_method_types[0] : null,
           status: "completed",
+          metadata: {
+            checkout_session_id: session.id,
+            customer: session.customer,
+            previous_limit: subscriptionData.snippet_limit,
+            new_limit: newSnippetLimit,
+          },
         })
 
-        if (purchaseError) {
-          console.error("Error creating purchase record:", purchaseError)
+        if (invoiceError) {
+          console.error("Error creating invoice record:", invoiceError)
           // Continue anyway, as this is not critical
         }
 

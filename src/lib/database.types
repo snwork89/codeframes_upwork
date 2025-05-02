@@ -198,6 +198,53 @@ export interface Database {
           status?: string
         }
       }
+      invoices: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+          email: string | null
+          full_name: string | null
+          plan_type: string
+          amount: number
+          snippet_limit_added: number
+          payment_intent_id: string | null
+          payment_method: string | null
+          status: string
+          metadata: Json
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+          email?: string | null
+          full_name?: string | null
+          plan_type: string
+          amount: number
+          snippet_limit_added: number
+          payment_intent_id?: string | null
+          payment_method?: string | null
+          status: string
+          metadata?: Json
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+          email?: string | null
+          full_name?: string | null
+          plan_type?: string
+          amount?: number
+          snippet_limit_added?: number
+          payment_intent_id?: string | null
+          payment_method?: string | null
+          status?: string
+          metadata?: Json
+        }
+      }
       profiles: {
         Row: {
           id: string
@@ -206,6 +253,7 @@ export interface Database {
           email: string
           full_name: string | null
           avatar_url: string | null
+          role: string
         }
         Insert: {
           id: string
@@ -214,6 +262,7 @@ export interface Database {
           email: string
           full_name?: string | null
           avatar_url?: string | null
+          role?: string
         }
         Update: {
           id?: string
@@ -222,6 +271,7 @@ export interface Database {
           email?: string
           full_name?: string | null
           avatar_url?: string | null
+          role?: string
         }
       }
     }
