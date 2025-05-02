@@ -34,7 +34,14 @@ export default async function AdminUsers({
   }
 
   // Get total count for pagination
-  const { count } = await query.select("id", { count: "exact", head: true })
+  const countQuery = supabase.from("profiles").select("*", { count: "exact" })
+
+  // Apply search if provided
+  if (search) {
+    countQuery.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`)
+  }
+
+  const { count, error: countError } = await countQuery
 
   // Get paginated results
   const { data: users, error } = await query.range((page - 1) * pageSize, page * pageSize - 1)
