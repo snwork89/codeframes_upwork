@@ -121,7 +121,7 @@ function PublicCanvasContent() {
 
       // Create a map of snippet positions
       const positionMap = new Map()
-      if (positions) {
+      if (positions && positions.length > 0) {
         positions.forEach((pos) => {
           positionMap.set(pos.snippet_id, { x: pos.position_x, y: pos.position_y })
         })
@@ -179,7 +179,7 @@ function PublicCanvasContent() {
 
   useEffect(() => {
     loadPublicCanvas()
-  }, [canvasId, supabase, reactFlowInstance])
+  }, [canvasId])
 
   if (notFound) {
     return (
