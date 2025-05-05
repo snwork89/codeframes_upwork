@@ -38,6 +38,27 @@ const TextUpdaterNode = ({ data }: NodeProps) => {
   )
 }
 
+// Function to generate a random position within the visible area
+function generateRandomPosition(index: number, count: number) {
+  // Create a grid-like layout with some randomness
+  const columns = Math.ceil(Math.sqrt(count))
+  const row = Math.floor(index / columns)
+  const col = index % columns
+
+  // Base position with grid layout
+  const baseX = col * 400 + 100
+  const baseY = row * 300 + 100
+
+  // Add some randomness to avoid perfect alignment
+  const randomX = Math.floor(Math.random() * 100) - 50
+  const randomY = Math.floor(Math.random() * 100) - 50
+
+  return {
+    x: baseX + randomX,
+    y: baseY + randomY,
+  }
+}
+
 function PublicCanvasContent() {
   const [nodes, setNodes] = useState<Node[]>([])
   const [edges, setEdges] = useState<Edge[]>([])
@@ -130,11 +151,8 @@ function PublicCanvasContent() {
       if (snippets && snippets.length > 0) {
         // Convert snippets to nodes
         const snippetNodes: Node[] = snippets.map((snippet, index) => {
-          // Use saved position if available, otherwise use default grid layout
-          const position = positionMap.get(snippet.id) || {
-            x: 100 + (index % 3) * 350,
-            y: 100 + Math.floor(index / 3) * 300,
-          }
+          // Use saved position if available, otherwise generate a random position
+          const position = positionMap.get(snippet.id) || generateRandomPosition(index, snippets.length)
 
           return {
             id: snippet.id,
