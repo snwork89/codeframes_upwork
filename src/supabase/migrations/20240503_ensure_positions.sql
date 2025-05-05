@@ -1,110 +1,147 @@
--- This migration ensures that all snippets have positions in the canvas_positions table
-
--- Create a function to generate positions for snippets that don't have them
-CREATE OR REPLACE FUNCTION ensure_snippet_positions() RETURNS void AS $$
+-- Create a function to generate random positions for snippets
+CREATE OR REPLACE FUNCTION generate_random_position(index integer, total integer)
+RETURNS jsonb AS $$
 DECLARE
-    snippet_record RECORD;
-    position_count INTEGER;
-    snippet_count INTEGER := 0;
-    row_index INTEGER := 0;
-    col_index INTEGER := 0;
+  columns integer;
+  row_num integer;
+  col_num integer;
+  base_x integer;
+  base_y integer;
+  random_x integer;
+  random_y integer;
 BEGIN
-    -- Get total number of snippets
-    SELECT COUNT(*) INTO snippet_count FROM snippets;
+  columns := CEIL(SQRT(total::float));
+  row_num := FLOOR(index::float / columns::float);
+  col_num := index % columns;
+  
+  base_x := col_num * 400 + 100;
+  base_y := row_num * 300 + 100;
+  
+  random_x := FLOOR(RANDOM() * 100) - 50;
+  random_y := FLOOR(RANDOM() * 100) - 50;
+  
+  RETURN jsonb_build_object('x', base_x + random_x, 'y', base_y + random_y);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to ensure all snippets have positions
+CREATE OR REPLACE FUNCTION ensure_snippet_positions()
+RETURNS void AS $$
+DECLARE
+  user_record RECORD;
+  snippet_record RECORD;
+  position_exists BOOLEAN;
+  snippet_count INTEGER;
+  snippet_index INTEGER;
+  position jsonb;
+BEGIN
+  -- Loop through all users
+  FOR user_record IN SELECT DISTINCT user_id FROM snippets LOOP
+    -- Count snippets for this user
+    SELECT COUNT(*) INTO snippet_count FROM snippets WHERE user_id = user_record.user_id;
     
-    -- Process each snippet
-    FOR snippet_record IN SELECT s.id, s.user_id FROM snippets s
-    LOOP
-        -- Check if position exists
-        SELECT COUNT(*) INTO position_count 
-        FROM canvas_positions 
-        WHERE snippet_id = snippet_record.id AND user_id = snippet_record.user_id;
+    -- Reset index for this user
+    snippet_index := 0;
+    
+    -- Loop through all snippets for this user
+    FOR snippet_record IN SELECT id FROM snippets WHERE user_id = user_record.user_id LOOP
+      -- Check if position exists
+      SELECT EXISTS(
+        SELECT 1 FROM canvas_positions 
+        WHERE user_id = user_record.user_id AND snippet_id = snippet_record.id
+      ) INTO position_exists;
+      
+      -- If position doesn't exist, create one
+      IF NOT position_exists THEN
+        position := generate_random_position(snippet_index, snippet_count);
         
-        -- If no position exists, create one
-        IF position_count = 0 THEN
-            INSERT INTO canvas_positions (
-                user_id, 
-                snippet_id, 
-                position_x, 
-                position_y
-            ) VALUES (
-                snippet_record.user_id,
-                snippet_record.id,
-                100 + (col_index * 350),  -- Grid layout: x position
-                100 + (row_index * 300)   -- Grid layout: y position
-            );
-            
-            -- Update grid position for next snippet
-            col_index := col_index + 1;
-            IF col_index >= 3 THEN  -- 3 columns per row
-                col_index := 0;
-                row_index := row_index + 1;
-            END IF;
-        END IF;
+        INSERT INTO canvas_positions (
+          user_id, 
+          snippet_id, 
+          position_x, 
+          position_y, 
+          created_at, 
+          updated_at
+        ) VALUES (
+          user_record.user_id,
+          snippet_record.id,
+          (position->>'x')::float,
+          (position->>'y')::float,
+          NOW(),
+          NOW()
+        );
+      END IF;
+      
+      -- Increment index
+      snippet_index := snippet_index + 1;
     END LOOP;
+    
+    -- Ensure canvas settings exist for this user
+    IF NOT EXISTS(SELECT 1 FROM canvas_settings WHERE user_id = user_record.user_id) THEN
+      INSERT INTO canvas_settings (
+        user_id,
+        zoom,
+        position_x,
+        position_y,
+        is_public,
+        public_access_id,
+        created_at,
+        updated_at
+      ) VALUES (
+        user_record.user_id,
+        1.0,
+        0.0,
+        0.0,
+        FALSE,
+        SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 10),
+        NOW(),
+        NOW()
+      );
+    END IF;
+  END LOOP;
 END;
 $$ LANGUAGE plpgsql;
 
--- Run the function to ensure all snippets have positions
-SELECT ensure_snippet_positions();
-
--- Create a trigger to automatically create a position when a new snippet is created
-CREATE OR REPLACE FUNCTION create_snippet_position() RETURNS TRIGGER AS $$
+-- Create a trigger to automatically create a position when a snippet is created
+CREATE OR REPLACE FUNCTION create_snippet_position()
+RETURNS TRIGGER AS $$
 DECLARE
-    position_count INTEGER;
-    row_index INTEGER := 0;
-    col_index INTEGER := 0;
-    snippet_count INTEGER;
+  snippet_count INTEGER;
+  position jsonb;
 BEGIN
-    -- Get the current number of snippets for this user to determine position
-    SELECT COUNT(*) INTO snippet_count 
-    FROM snippets 
-    WHERE user_id = NEW.user_id;
-    
-    -- Calculate grid position based on snippet count
-    row_index := FLOOR((snippet_count - 1) / 3);
-    col_index := (snippet_count - 1) % 3;
-    
-    -- Insert position
-    INSERT INTO canvas_positions (
-        user_id, 
-        snippet_id, 
-        position_x, 
-        position_y
-    ) VALUES (
-        NEW.user_id,
-        NEW.id,
-        100 + (col_index * 350),  -- Grid layout: x position
-        100 + (row_index * 300)   -- Grid layout: y position
-    );
-    
-    RETURN NEW;
+  -- Count existing snippets for this user
+  SELECT COUNT(*) INTO snippet_count FROM snippets WHERE user_id = NEW.user_id;
+  
+  -- Generate a position
+  position := generate_random_position(snippet_count - 1, snippet_count);
+  
+  -- Create a position record
+  INSERT INTO canvas_positions (
+    user_id,
+    snippet_id,
+    position_x,
+    position_y,
+    created_at,
+    updated_at
+  ) VALUES (
+    NEW.user_id,
+    NEW.id,
+    (position->>'x')::float,
+    (position->>'y')::float,
+    NOW(),
+    NOW()
+  );
+  
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
--- Drop the trigger if it already exists
-DROP TRIGGER IF EXISTS snippet_position_trigger ON snippets;
 
 -- Create the trigger
-CREATE TRIGGER snippet_position_trigger
+DROP TRIGGER IF EXISTS create_snippet_position_trigger ON snippets;
+CREATE TRIGGER create_snippet_position_trigger
 AFTER INSERT ON snippets
 FOR EACH ROW
 EXECUTE FUNCTION create_snippet_position();
 
--- Create default canvas settings for users who don't have them
-INSERT INTO canvas_settings (user_id, zoom, position_x, position_y, is_public, public_access_id)
-SELECT 
-    p.id as user_id, 
-    1.0 as zoom, 
-    0.0 as position_x, 
-    0.0 as position_y, 
-    false as is_public,
-    encode(gen_random_bytes(5), 'hex') as public_access_id
-FROM 
-    auth.users u
-JOIN 
-    profiles p ON u.id = p.id
-LEFT JOIN 
-    canvas_settings cs ON p.id = cs.user_id
-WHERE 
-    cs.id IS NULL;
+-- Run the function to ensure all existing snippets have positions
+SELECT ensure_snippet_positions();
