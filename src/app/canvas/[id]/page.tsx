@@ -7,7 +7,7 @@ import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, User } from "lucide-react"
 import HeaderComponent from "@/components/HeaderComponent"
-import CodePreview from "@/components/CodePreview";
+import CodePreview from "@/components/CodePreview"
 import {
   ReactFlow,
   Background,
@@ -54,132 +54,130 @@ function PublicCanvasContent() {
     textUpdater: TextUpdaterNode,
   }
 
-  useEffect(() => {
-    async function loadPublicCanvas() {
-      try {
-        if (!canvasId) {
-          setNotFound(true)
-          return
-        }
-
-        console.log("Loading canvas with ID:", canvasId)
-
-        // Get canvas settings by public access ID
-        const { data: canvasSettings, error: settingsError } = await supabase
-          .from("canvas_settings")
-          .select("public_access_id, is_public, zoom, position_x, position_y, user_id")
-          .eq("public_access_id", canvasId)
-          .eq("is_public", true)
-          .single()
-
-        if (settingsError) {
-          console.error("Canvas not found or not public:", settingsError)
-          setNotFound(true)
-          return
-        }
-
-        // Get user profile separately
-        const { data: userProfile, error: profileError } = await supabase
-          .from("profiles")
-          .select("full_name, email")
-          .eq("id", canvasSettings.user_id)
-          .single()
-
-        if (profileError) {
-          console.error("Error fetching user profile:", profileError)
-        }
-
-        // Set owner name
-        const authorName = userProfile?.full_name || userProfile?.email?.split("@")[0] || "Anonymous"
-        setOwnerName(authorName)
-
-        console.log("Canvas settings found:", canvasSettings)
-
-        // Set owner name
-        // const profile = canvasSettings.profiles as any
-        // setOwnerName(profile?.full_name || profile?.email?.split("@")[0] || "Anonymous")
-
-        // Get ALL snippets from this user (not just public ones)
-        // This allows the canvas owner to share their entire canvas layout
-        const { data: snippets, error: snippetsError } = await supabase
-          .from("snippets")
-          .select("*")
-          .eq("user_id", canvasSettings.user_id)
-
-        if (snippetsError) {
-          console.error("Error fetching snippets:", snippetsError)
-          return
-        }
-
-        console.log("Snippets found:", snippets?.length || 0)
-
-        // Get saved positions
-        const { data: positions, error: positionsError } = await supabase
-          .from("canvas_positions")
-          .select("*")
-          .eq("user_id", canvasSettings.user_id)
-
-        if (positionsError) {
-          console.error("Error fetching positions:", positionsError)
-        }
-
-        // Create a map of snippet positions
-        const positionMap = new Map()
-        if (positions) {
-          positions.forEach((pos) => {
-            positionMap.set(pos.snippet_id, { x: pos.position_x, y: pos.position_y })
-          })
-        }
-
-        if (snippets && snippets.length > 0) {
-          // Convert snippets to nodes
-          const snippetNodes: Node[] = snippets.map((snippet, index) => {
-            // Use saved position if available, otherwise use default grid layout
-            const position = positionMap.get(snippet.id) || {
-              x: 100 + (index % 3) * 350,
-              y: 100 + Math.floor(index / 3) * 300,
-            }
-
-            return {
-              id: snippet.id,
-              type: "textUpdater",
-              position,
-              data: {
-                html: snippet.html_code || "",
-                css: snippet.css_code || "",
-                js: snippet.js_code || "",
-                title: snippet.title,
-                description: snippet.description,
-                is_public: snippet.is_public,
-              },
-              draggable: false, // Make nodes non-draggable in public view
-              selectable: false, // Make nodes non-selectable in public view
-            }
-          })
-
-          setNodes(snippetNodes)
-        } else {
-          console.log("No snippets found for this canvas")
-        }
-
-        // Set viewport after nodes are loaded
-        setTimeout(() => {
-          if (canvasSettings && reactFlowInstance) {
-            reactFlowInstance.setViewport({
-              x: canvasSettings.position_x || 0,
-              y: canvasSettings.position_y || 0,
-              zoom: canvasSettings.zoom || 1,
-            })
-          }
-        }, 200)
-      } catch (error) {
-        console.error("Error loading public canvas:", error)
+  async function loadPublicCanvas() {
+    try {
+      if (!canvasId) {
         setNotFound(true)
-      } finally {
-        setLoading(false)
+        return
       }
-    }
 
+      console.log("Loading canvas with ID:", canvasId)
+
+      // Get canvas settings by public access ID
+      const { data: canvasSettings, error: settingsError } = await supabase
+        .from("canvas_settings")
+        .select("public_access_id, is_public, zoom, position_x, position_y, user_id")
+        .eq("public_access_id", canvasId)
+        .eq("is_public", true)
+        .single()
+
+      if (settingsError || !canvasSettings) {
+        console.error("Canvas not found or not public:", settingsError)
+        setNotFound(true)
+        return
+      }
+
+      console.log("Canvas settings found:", canvasSettings)
+
+      // Get user profile separately
+      const { data: userProfile, error: profileError } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", canvasSettings.user_id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching user profile:", profileError)
+      }
+
+      // Set owner name
+      const authorName = userProfile?.full_name || userProfile?.email?.split("@")[0] || "Anonymous"
+      setOwnerName(authorName)
+
+      // Get ALL snippets from this user (not just public ones)
+      const { data: snippets, error: snippetsError } = await supabase
+        .from("snippets")
+        .select("*")
+        .eq("user_id", canvasSettings.user_id)
+
+      if (snippetsError) {
+        console.error("Error fetching snippets:", snippetsError)
+        return
+      }
+
+      console.log("Snippets found:", snippets?.length || 0, snippets)
+
+      // Get saved positions
+      const { data: positions, error: positionsError } = await supabase
+        .from("canvas_positions")
+        .select("*")
+        .eq("user_id", canvasSettings.user_id)
+
+      if (positionsError) {
+        console.error("Error fetching positions:", positionsError)
+      }
+
+      console.log("Positions found:", positions?.length || 0, positions)
+
+      // Create a map of snippet positions
+      const positionMap = new Map()
+      if (positions) {
+        positions.forEach((pos) => {
+          positionMap.set(pos.snippet_id, { x: pos.position_x, y: pos.position_y })
+        })
+      }
+
+      if (snippets && snippets.length > 0) {
+        // Convert snippets to nodes
+        const snippetNodes: Node[] = snippets.map((snippet, index) => {
+          // Use saved position if available, otherwise use default grid layout
+          const position = positionMap.get(snippet.id) || {
+            x: 100 + (index % 3) * 350,
+            y: 100 + Math.floor(index / 3) * 300,
+          }
+
+          return {
+            id: snippet.id,
+            type: "textUpdater",
+            position,
+            data: {
+              html: snippet.html_code || "",
+              css: snippet.css_code || "",
+              js: snippet.js_code || "",
+              title: snippet.title,
+              description: snippet.description,
+              is_public: snippet.is_public,
+            },
+            draggable: false, // Make nodes non-draggable in public view
+            selectable: false, // Make nodes non-selectable in public view
+          }
+        })
+
+        console.log("Created nodes:", snippetNodes.length)
+        setNodes(snippetNodes)
+      } else {
+        console.log("No snippets found for this canvas")
+      }
+
+      // Set viewport after nodes are loaded
+      setTimeout(() => {
+        if (canvasSettings && reactFlowInstance) {
+          reactFlowInstance.setViewport({
+            x: canvasSettings.position_x || 0,
+            y: canvasSettings.position_y || 0,
+            zoom: canvasSettings.zoom || 1,
+          })
+        }
+      }, 200)
+    } catch (error) {
+      console.error("Error loading public canvas:", error)
+      setNotFound(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     loadPublicCanvas()
   }, [canvasId, supabase, reactFlowInstance])
 
