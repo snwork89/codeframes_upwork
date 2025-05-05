@@ -9,6 +9,7 @@ import { Pencil, Trash2, Plus, Save, X, Share2, Lock, Globe, Eye, EyeOff } from 
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
 import { nanoid } from "nanoid"
+import FixCanvasButton from "@/components/fix-canvas-button"
 import {
   Dialog,
   DialogContent,
@@ -62,6 +63,27 @@ const TextUpdaterNode = ({ data, selected }: NodeProps) => {
 }
 
 const generateId = () => `node-${Math.random().toString(36).substr(2, 9)}`
+
+// Function to generate a random position within the visible area
+function generateRandomPosition(index: number, count: number) {
+  // Create a grid-like layout with some randomness
+  const columns = Math.ceil(Math.sqrt(count))
+  const row = Math.floor(index / columns)
+  const col = index % columns
+
+  // Base position with grid layout
+  const baseX = col * 400 + 100
+  const baseY = row * 300 + 100
+
+  // Add some randomness to avoid perfect alignment
+  const randomX = Math.floor(Math.random() * 100) - 50
+  const randomY = Math.floor(Math.random() * 100) - 50
+
+  return {
+    x: baseX + randomX,
+    y: baseY + randomY,
+  }
+}
 
 export default function CanvasView() {
   const [nodes, setNodes] = useState<Node[]>([])
@@ -157,11 +179,8 @@ export default function CanvasView() {
         if (snippets) {
           // Convert snippets to nodes
           const snippetNodes: Node[] = snippets.map((snippet, index) => {
-            // Use saved position if available, otherwise use default grid layout
-            const position = positionMap.get(snippet.id) || {
-              x: 100 + (index % 3) * 350,
-              y: 100 + Math.floor(index / 3) * 300,
-            }
+            // Use saved position if available, otherwise generate a random position
+            const position = positionMap.get(snippet.id) || generateRandomPosition(index, snippets.length)
 
             return {
               id: snippet.id,
@@ -599,6 +618,7 @@ export default function CanvasView() {
                       disabled={savingCanvas}
                     />
                     <Label htmlFor="public-canvas">Make canvas public</Label>
+                    <FixCanvasButton />
                   </div>
 
                   {isPublicCanvas && (
@@ -770,17 +790,21 @@ export default function CanvasView() {
 
         {/* Canvas */}
         <div className="flex-1 relative">
-          {isPublicCanvas && (
-            <div className="absolute top-4 right-4 z-10 bg-yellow-50 border border-yellow-200 rounded-md p-3 shadow-md max-w-xs">
-              <p className="text-sm text-yellow-800 flex items-center">
-                <Globe className="h-4 w-4 mr-2 text-yellow-600" />
-                <span>
-                  <span className="font-medium">Canvas is public.</span> Semi-transparent snippets are private and only
-                  visible to you.
-                </span>
-              </p>
-            </div>
-          )}
+          <div className="absolute top-4 right-4 z-10 flex space-x-2">
+            <FixCanvasButton />
+
+            {isPublicCanvas && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 shadow-md max-w-xs">
+                <p className="text-sm text-yellow-800 flex items-center">
+                  <Globe className="h-4 w-4 mr-2 text-yellow-600" />
+                  <span>
+                    <span className="font-medium">Canvas is public.</span> Semi-transparent snippets are private and
+                    only visible to you.
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
 
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
