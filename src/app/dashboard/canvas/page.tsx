@@ -54,11 +54,7 @@ const TextUpdaterNode = ({ data, selected }: NodeProps) => {
     <div className="p-1">
       <div className="font-medium text-sm mb-1 px-1 truncate flex justify-between items-center">
         <span>{title}</span>
-        {is_public ? (
-          <Eye className="h-3 w-3 text-green-600" />
-        ) : (
-          <EyeOff className="h-3 w-3 text-gray-400" />
-        )}
+        {is_public ? <Eye className="h-3 w-3 text-green-600" /> : <EyeOff className="h-3 w-3 text-gray-400" />}
       </div>
       <CodePreview html={html} css={css} js={js} width="300px" height="200px" />
     </div>
@@ -247,7 +243,7 @@ export default function CanvasView() {
       const updatedNodes = applyNodeChanges(changes, nds)
 
       // Check if any node position has changed
-      const positionChanges = changes.filter((change:any) => change.type === "position" && change.position)
+      const positionChanges = changes.filter((change: any) => change.type === "position" && change.position)
 
       if (positionChanges.length > 0) {
         // Debounce saving to database
@@ -501,6 +497,8 @@ export default function CanvasView() {
         setPublicAccessId(accessId)
       }
 
+      console.log("Setting canvas public:", isPublic, "with ID:", accessId)
+
       // Update canvas settings
       const { error } = await supabase.from("canvas_settings").upsert(
         {
@@ -525,7 +523,9 @@ export default function CanvasView() {
       // Update share URL
       if (isPublic && accessId) {
         const baseUrl = window.location.origin
-        setShareUrl(`${baseUrl}/canvas/${accessId}`)
+        const shareUrl = `${baseUrl}/canvas/${accessId}`
+        setShareUrl(shareUrl)
+        console.log("Share URL set to:", shareUrl)
       } else {
         setShareUrl("")
       }
