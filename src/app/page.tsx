@@ -41,10 +41,14 @@ export default function Home() {
         } = await supabase.auth.getUser();
         setIsLoggedIn(!!user);
 
+      
+
         createChat({
           webhookUrl: 'https://smitsabhadiya.app.n8n.cloud/webhook/f55206f2-96b3-44b7-a7a4-51f27ec62c39/chat',
-           // Custom placeholder text
-          initialMessages: ['Welcome! How can I assist you today?'], // Initial messages displayed to the user
+          target: '#n8n-chat', // Replace with your target element selector
+          mode: 'window', // Options: 'window', 'fullscreen', etc.
+      initialMessages:["Hi there ! how i can assist you ?"]
+          
         });
       } catch (error) {
         console.error("Error checking auth:", error);
