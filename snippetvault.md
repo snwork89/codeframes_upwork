@@ -1,0 +1,306 @@
+# SnippetVault - Complete User Documentation
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Getting Started](#getting-started)
+3. [Dashboard Overview](#dashboard-overview)
+4. [Managing Snippets](#managing-snippets)
+5. [Canvas Feature](#canvas-feature)
+6. [Sharing & Collaboration](#sharing--collaboration)
+7. [Subscription Plans & Pricing](#subscription-plans--pricing)
+8. [Account Management](#account-management)
+9. [Troubleshooting](#troubleshooting)
+10. [FAQs](#faqs)
+
+## Introduction
+
+SnippetVault is a powerful code snippet management platform that allows developers to store, organize, and share HTML, CSS, and JavaScript code snippets. What makes SnippetVault unique is its infinite canvas feature, which enables users to visually organize their snippets in a spatial layout, making it easier to group related code and visualize relationships between different snippets.
+
+### Key Benefits
+- Store and organize code snippets in one central location
+- Visualize your snippet library on an infinite canvas
+- Live preview of HTML, CSS, and JavaScript code
+- Share snippets and canvases with other developers
+- Access your snippets from anywhere
+
+## Getting Started
+
+### Creating an Account
+1. Visit the SnippetVault homepage at [snippetvault.com](https://snippetvault.com)
+2. Click on the "Sign Up" button in the top-right corner
+3. Enter your email address and create a password
+4. Check your email for a verification link
+5. Click the verification link to activate your account
+
+### Logging In
+1. Visit the SnippetVault homepage
+2. Click on the "Login" button in the top-right corner
+3. Enter your email and password
+4. Click "Login" to access your dashboard
+
+### Initial Setup
+Upon first login, you'll be directed to your dashboard. Your account starts with the Free plan, which includes:
+- Up to 10 code snippets
+- Basic organization features
+- Live preview functionality
+
+## Dashboard Overview
+
+### Navigation
+The dashboard is your central hub for managing all your snippets. The main navigation includes:
+
+- **Dashboard**: Overview of your snippets and recent activity
+- **Canvas View**: Visual organization of your snippets on an infinite canvas
+- **Favorites**: Quick access to your favorite snippets
+- **New Snippet**: Create a new code snippet
+- **Settings**: Manage your account and subscription
+- **Explore**: Discover public snippets shared by other users
+
+### Dashboard Home
+The dashboard home displays:
+- A grid of your snippets with title, description, and tags
+- Snippet usage statistics (used vs. available)
+- Quick actions for each snippet (edit, view, delete)
+
+## Managing Snippets
+
+### Creating a New Snippet
+1. Click on "New Snippet" in the dashboard navigation
+2. Enter a title for your snippet
+3. Add an optional description
+4. Enter your HTML, CSS, and JavaScript code in the respective tabs
+5. Toggle "Make this snippet public" if you want to share it
+6. Click "Create Snippet" to save
+
+### Editing a Snippet
+1. From the dashboard, click on the "Edit" button on any snippet
+2. Modify the title, description, or code as needed
+3. Click "Save Changes" to update the snippet
+
+### Viewing a Snippet
+1. From the dashboard, click on the "View" button on any snippet
+2. This opens a detailed view with:
+   - Live preview of the code
+   - Code tabs for HTML, CSS, and JavaScript
+   - Snippet information (creation date, views, etc.)
+
+### Deleting a Snippet
+1. From the dashboard, click on the "Edit" button on any snippet
+2. Click the "Delete" button at the bottom of the page
+3. Confirm deletion when prompted
+
+### Favoriting Snippets
+1. Click the star icon on any snippet to add it to your favorites
+2. Access all favorites from the "Favorites" section in the navigation
+
+## Canvas Feature
+
+The Canvas is SnippetVault's unique feature that allows you to organize your snippets visually on an infinite canvas.
+
+### Accessing the Canvas
+1. Click on "Canvas View" in the dashboard navigation
+2. Your snippets will be displayed as draggable cards on the canvas
+
+### Canvas Navigation
+- **Pan**: Click and drag on empty space to move around the canvas
+- **Zoom**: Use the mouse wheel or pinch gestures to zoom in and out
+- **Controls**: Use the control panel in the bottom-right for additional navigation options
+
+### Organizing Snippets on Canvas
+1. **Moving Snippets**: Click and drag any snippet to reposition it
+2. **Selecting Snippets**: Click on a snippet to select it and view details in the sidebar
+3. **Editing on Canvas**: Select a snippet and click "Edit" in the sidebar to modify it
+
+### Canvas Settings
+1. Click the "Share" button in the top-right of the canvas
+2. Toggle "Make canvas public" to share your canvas with others
+3. Use the "Fix Canvas" button if any snippets are missing positions
+
+### Troubleshooting Canvas Issues
+If snippets aren't appearing correctly on your canvas:
+1. Click the "Fix Canvas" button in the top-right corner
+2. This will automatically assign positions to any snippets without them
+3. The page will reload with all snippets properly positioned
+
+## Sharing & Collaboration
+
+### Making Snippets Public
+1. When creating or editing a snippet, toggle "Make this snippet public"
+2. Public snippets will be visible to anyone with the link and may appear in the Explore section
+
+### Sharing Your Canvas
+1. In Canvas View, click the "Share" button
+2. Toggle "Make canvas public"
+3. Copy the generated link to share with others
+4. Note: Private snippets will appear semi-transparent to visitors
+
+### Viewing Shared Canvases
+1. When someone shares a canvas link with you, open it in your browser
+2. You'll see all snippets arranged as the owner organized them
+3. Private snippets will appear semi-transparent and won't show their code
+
+### Explore Section
+1. Click "Explore" in the main navigation
+2. Browse popular and recent public snippets
+3. View public canvases shared by other users
+
+## Subscription Plans & Pricing
+
+SnippetVault offers three subscription plans to meet different needs:
+
+### Free Plan
+- **Price**: $0/month
+- **Features**:
+  - Save up to 10 code snippets
+  - Live preview
+  - Basic organization
+- **Best for**: Getting started and testing the platform
+
+### Basic Plan
+- **Price**: $20 (one-time purchase)
+- **Features**:
+  - Save up to 100 code snippets
+  - Live preview
+  - Advanced organization
+  - Snippet sharing
+- **Best for**: Growing snippet collections
+
+### Premium Plan
+- **Price**: $50 (one-time purchase)
+- **Features**:
+  - Save up to 500 code snippets
+  - Live preview
+  - Advanced organization
+  - Snippet sharing
+  - Team collaboration
+  - Priority support
+- **Best for**: Power users and teams
+
+### Upgrading Your Plan
+1. Go to "Settings" in the dashboard navigation
+2. Scroll to the "Subscription Plans & Pricing" section
+3. Select the plan you want to upgrade to
+4. Click "Purchase" to proceed to checkout
+5. Complete the payment process
+6. Your snippet limit will be increased immediately
+
+### Payment Methods
+- Credit/Debit Cards (Visa, Mastercard, American Express)
+- PayPal
+
+## Account Management
+
+### Updating Profile Information
+1. Go to "Settings" in the dashboard navigation
+2. Update your name, email, or other profile information
+3. Click "Save Changes"
+
+### Changing Your Password
+1. Go to "Settings" in the dashboard navigation
+2. Click on "Security"
+3. Enter your current password and new password
+4. Click "Update Password"
+
+### Viewing Purchase History
+1. Go to "Settings" in the dashboard navigation
+2. Scroll to the "Purchase History" section
+3. View all your previous purchases and their status
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Snippet Not Saving
+- Ensure you have not reached your snippet limit
+- Check your internet connection
+- Try refreshing the page and attempting again
+
+#### Canvas Positions Not Saving
+- Use the "Fix Canvas" button in the Canvas View
+- Ensure you're not in read-only mode
+- Check your internet connection
+
+#### Sharing Link Not Working
+- Verify the canvas is set to public
+- Ensure the recipient is using the correct link
+- Try regenerating the sharing link
+
+#### Payment Issues
+- Verify your payment method has sufficient funds
+- Check if your card is expired or has restrictions
+- Contact support if payment is processed but plan isn't upgraded
+
+### Getting Help
+If you encounter any issues not covered in this documentation:
+1. Check the FAQs section below
+2. Use the chat support button in the bottom-right corner
+3. Email support@snippetvault.com
+
+## FAQs
+
+### General Questions
+
+**Q: What is SnippetVault?**  
+A: SnippetVault is a platform for storing, organizing, and sharing code snippets with a unique infinite canvas feature for visual organization.
+
+**Q: Is SnippetVault free to use?**  
+A: Yes, SnippetVault offers a free plan with up to 10 snippets. Paid plans are available for users who need more storage.
+
+**Q: What types of code can I store?**  
+A: Currently, SnippetVault supports HTML, CSS, and JavaScript code snippets with live preview.
+
+### Account Questions
+
+**Q: How do I reset my password?**  
+A: Click "Login", then "Forgot Password", and follow the instructions sent to your email.
+
+**Q: Can I change my email address?**  
+A: Yes, you can update your email in the Settings section of your dashboard.
+
+**Q: How do I delete my account?**  
+A: Go to Settings, scroll to the bottom, and click "Delete Account". Note that this action is irreversible.
+
+### Snippet Questions
+
+**Q: Is there a limit to how many snippets I can create?**  
+A: Yes, the Free plan allows up to 10 snippets, Basic plan allows up to 100 snippets, and Premium plan allows up to 500 snippets.
+
+**Q: Can I import snippets from other platforms?**  
+A: Not currently, but this feature is on our roadmap.
+
+**Q: Are my private snippets secure?**  
+A: Yes, private snippets are only visible to you and cannot be accessed by other users.
+
+### Canvas Questions
+
+**Q: What is the Canvas feature?**  
+A: Canvas is a visual organization tool that allows you to arrange your snippets spatially on an infinite canvas.
+
+**Q: Why are some snippets semi-transparent on shared canvases?**  
+A: Semi-transparent snippets are private and only fully visible to the canvas owner.
+
+**Q: What does the "Fix Canvas" button do?**  
+A: It assigns positions to any snippets that don't have saved positions and ensures all snippets are visible on the canvas.
+
+### Billing Questions
+
+**Q: Are the paid plans subscription-based or one-time purchases?**  
+A: Our paid plans are one-time purchases that permanently increase your snippet limit.
+
+**Q: Can I get a refund if I'm not satisfied?**  
+A: We offer a 14-day money-back guarantee. Contact support@snippetvault.com to request a refund.
+
+**Q: Will there be any additional fees?**  
+A: No, the price you see is the price you pay. There are no hidden fees or additional charges.
+
+### Technical Questions
+
+**Q: Which browsers are supported?**  
+A: SnippetVault works best on Chrome, Firefox, Safari, and Edge (latest versions).
+
+**Q: Is there a mobile app?**  
+A: Not currently, but the website is responsive and works on mobile devices.
+
+**Q: Can I use SnippetVault offline?**  
+A: SnippetVault requires an internet connection to save and load snippets.
+\`\`\`
