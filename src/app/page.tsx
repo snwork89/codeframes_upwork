@@ -25,7 +25,7 @@ import InteractiveCanvas from "@/components/InterActiveCanvas";
 import UserDropdown from "@/components/user-dropdown";
 import { motion } from "framer-motion";
 import HeaderComponent from "@/components/HeaderComponent";
-import '@n8n/chat/style.css';
+
 import { createChat } from '@n8n/chat';
 
 export default function Home() {
@@ -40,6 +40,12 @@ export default function Home() {
           data: { user },
         } = await supabase.auth.getUser();
         setIsLoggedIn(!!user);
+
+        createChat({
+          webhookUrl: 'https://smitsabhadiya.app.n8n.cloud/webhook/f55206f2-96b3-44b7-a7a4-51f27ec62c39/chat',
+           // Custom placeholder text
+          initialMessages: ['Welcome! How can I assist you today?'], // Initial messages displayed to the user
+        });
       } catch (error) {
         console.error("Error checking auth:", error);
       } finally {
@@ -51,9 +57,7 @@ export default function Home() {
   }, [supabase]);
 
   useEffect(()=>{
-    createChat({
-			webhookUrl: 'https://smitsabhadiya.app.n8n.cloud/webhook/f55206f2-96b3-44b7-a7a4-51f27ec62c39/chat'
-		});
+  
   },[])
 
   return (
