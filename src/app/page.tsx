@@ -25,6 +25,8 @@ import InteractiveCanvas from "@/components/InterActiveCanvas";
 import UserDropdown from "@/components/user-dropdown";
 import { motion } from "framer-motion";
 import HeaderComponent from "@/components/HeaderComponent";
+import '@n8n/chat/style.css';
+import { createChat } from '@n8n/chat';
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -47,6 +49,12 @@ export default function Home() {
 
     checkAuth();
   }, [supabase]);
+
+  useEffect(()=>{
+    createChat({
+			webhookUrl: 'https://smitsabhadiya.app.n8n.cloud/webhook/f55206f2-96b3-44b7-a7a4-51f27ec62c39/chat'
+		});
+  },[])
 
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden bg-white">

@@ -148,26 +148,26 @@ If snippets aren't appearing correctly on your canvas:
 
 SnippetVault offers three subscription plans to meet different needs:
 
-### Free Plan
-- **Price**: $0/month
-- **Features**:
+Free Plan
+Price $0/month
+Features
   - Save up to 10 code snippets
   - Live preview
   - Basic organization
-- **Best for**: Getting started and testing the platform
+- **Best for Getting started and testing the platform
 
-### Basic Plan
-- **Price**: $20 (one-time purchase)
-- **Features**:
+Basic Plan
+- Price $20 (one-time purchase)
+- Features
   - Save up to 100 code snippets
   - Live preview
   - Advanced organization
   - Snippet sharing
-- **Best for**: Growing snippet collections
+- Best for Growing snippet collections
 
-### Premium Plan
-- **Price**: $50 (one-time purchase)
-- **Features**:
+Premium Plan
+- Price $50 (one-time purchase)
+- Features
   - Save up to 500 code snippets
   - Live preview
   - Advanced organization
