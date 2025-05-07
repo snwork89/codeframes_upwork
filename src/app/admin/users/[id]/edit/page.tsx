@@ -1,8 +1,7 @@
 "use client"
 
 import { checkAdminAccess } from "@/lib/admin-middleware"
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClientComponentClient, createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -16,10 +15,9 @@ export default async function EditUser({
 }: {
   params: { id: string }
 }) {
-  // This will redirect if not an admin
-  const adminUser = await checkAdminAccess()
 
-  const supabase = createServerComponentClient<Database>({ cookies })
+
+  const supabase = createClientComponentClient()
 
   // Get user data
   const { data: user, error } = await supabase
@@ -33,9 +31,9 @@ export default async function EditUser({
   }
 
   async function updateUser(formData: FormData) {
-    "use server"
 
-    const supabase = createServerComponentClient<Database>({ cookies })
+
+    
 
     // Check if current user is admin
     await checkAdminAccess()

@@ -12,7 +12,7 @@ import type { Database } from "@/lib/database.types"
 type Snippet = Database["public"]["Tables"]["snippets"]["Row"]
 
 // export const revalidate = 3600 // Revalidate this page every hour
-
+export const dynamic = 'force-dynamic';
 export default async function ExplorePage() {
   const supabase = createServerComponentClient<Database>({ cookies })
 
